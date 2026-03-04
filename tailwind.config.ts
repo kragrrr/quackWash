@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["Fredoka", "sans-serif"],
+        body: ["Nunito", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -47,6 +51,16 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        pond: {
+          DEFAULT: "hsl(var(--pond))",
+          light: "hsl(var(--pond-light))",
+          dark: "hsl(var(--pond-dark))",
+        },
+        duck: {
+          idle: "hsl(var(--duck-idle))",
+          running: "hsl(var(--duck-running))",
+          maintenance: "hsl(var(--duck-maintenance))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,25 +79,53 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "duck-bob": {
+          "0%, 100%": { transform: "translateY(0) rotate(-2deg)" },
+          "50%": { transform: "translateY(-8px) rotate(2deg)" },
+        },
+        "duck-spin": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "duck-wobble": {
+          "0%, 100%": { transform: "rotate(175deg)" },
+          "25%": { transform: "rotate(180deg)" },
+          "75%": { transform: "rotate(170deg)" },
+        },
+        "whirlpool-spin": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "pulse-border": {
+          "0%, 100%": { borderColor: "hsl(var(--duck-running))" },
+          "50%": { borderColor: "hsl(var(--duck-running) / 0.3)" },
+        },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        ripple: {
+          "0%": { transform: "scale(0.8)", opacity: "1" },
+          "100%": { transform: "scale(2)", opacity: "0" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "duck-bob": "duck-bob 3s ease-in-out infinite",
+        "duck-spin": "duck-spin 1.5s linear infinite",
+        "duck-wobble": "duck-wobble 2s ease-in-out infinite",
+        "whirlpool-spin": "whirlpool-spin 3s linear infinite",
+        "pulse-border": "pulse-border 2s ease-in-out infinite",
+        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
+        ripple: "ripple 1.5s ease-out infinite",
       },
     },
   },
