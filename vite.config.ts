@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/api/tangerpay": {
+        target: "https://app.tangerpay.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tangerpay/, "/api"),
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

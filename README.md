@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
+# QuackWash 🦆
 
-## Project info
+A mobile-first React app for tracking laundry machines at UOW International House, featuring live status updates, browser push notifications, and a gamified breadcrumb economy.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Quick Start
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run dev        # http://localhost:8080
 ```
 
-**Edit a file directly in GitHub**
+## Architecture
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Data Flow
 
-**Use GitHub Codespaces**
+```
+Tangerpay API ──► Vite Proxy (/api/tangerpay) ──► useMachines() hook ──► Index.tsx ──► UI Components
+                                                  (TanStack Query,       │
+                                                   60s polling,          ├─ StatusStrip  (machine counts)
+                                                   stale-while-          ├─ DuckCard     (duck visuals + timer)
+                                                   revalidate)           ├─ DuckDrawer   (details + watch/claim)
+                                                                         └─ TopBar       (breadcrumbs + bell)
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### API → UI State Mapping
 
-## What technologies are used for this project?
+| API Field | Condition | UI State | Duck Visual |
+|-----------|-----------|----------|-------------|
+| `status: "Maintenance"` | — | `"Maintenance"` | 💀 Grey wobbling duck, caution tape |
+| `cycleInfo.cycleStatus: "Running"` | `status ≠ "Maintenance"` | `"Running"` | 🌀 Spinning duck, countdown badge |
+| `cycleInfo.cycleStatus: "Idle"` | `status ≠ "Maintenance"` | `"Idle"` | 🦆 Green bobbing duck |
 
-This project is built with:
+### Notification System (Service Worker)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+**Files:** `public/sw.js`, `src/hooks/useNotifications.ts`
 
-## How can I deploy this project?
+1. **"Watch this Duck"** — User taps a running machine → subscribes to alerts. When `cycleStatus` transitions from `Running → Idle`, the service worker fires: *"QUACK! Your laundry is done."*
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+2. **"Empty Pond"** — Toggle in the dashboard. When enabled, fires an alert the moment *any* machine flips to `Idle`: *"A duck just became free!"*
 
-## Can I connect a custom domain to my Lovable project?
+- Service worker is registered on first watch action
+- `Notification.requestPermission()` is called before the first alert
+- Watch state persists in `localStorage` so watches survive page refreshes
 
-Yes, you can!
+### Breadcrumb Economy
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+**Files:** `src/contexts/BreadcrumbContext.tsx`, `src/components/BreadcrumbEconomy.tsx`
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Earning:** If a user clears their watched machine within 5 minutes of its cycle completing, they earn **+10 Breadcrumbs**.
+- **Spending:** Breadcrumbs unlock cosmetic duck skins in the Duck Shop (Pirate Duck 🏴‍☠️, Propeller Hat 🧢, Cool Duck 😎, Royal Duck 👑).
+- **Equipping:** Unlocked cosmetics can be equipped/unequipped. The active cosmetic renders as a badge overlay on all duck cards.
+- **Persistence:** All state (`breadcrumbs`, `unlockedCosmetics`, `activeCosmeticId`, `completionTimestamps`) is persisted to `localStorage`.
+
+### State Management Summary
+
+| Concern | Mechanism | Persistence |
+|---------|-----------|-------------|
+| Machine data | TanStack Query (`useMachines`) | In-memory + stale cache |
+| Watched machines | `useNotifications` hook | `localStorage` |
+| Empty Pond toggle | `useNotifications` hook | `localStorage` |
+| Breadcrumbs + cosmetics | React Context (`BreadcrumbContext`) | `localStorage` |
+
+### Error Handling
+
+- API failure → "🥶 Pond is frozen!" sonner toast, stale data remains on screen
+- Notification permission denied → watch action silently degrades (no crash)
+
+## Tech Stack
+
+- **Vite** — Build tool & dev server (with proxy for CORS)
+- **React 18** + **TypeScript**
+- **TanStack Query v5** — Data fetching & caching
+- **shadcn/ui** + **Tailwind CSS** — UI components
+- **Web Push API** + **Service Worker** — Browser notifications
+- **React Context + localStorage** — Breadcrumb economy state
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server on port 8080 |
+| `npm run build` | Production build |
+| `npm run test` | Run vitest suite |
+| `npm run preview` | Preview production build |

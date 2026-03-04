@@ -2,196 +2,538 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+/* Pixel fonts are loaded via index.html — Press Start 2P + VT323 */
 
 @layer base {
   :root {
-    --background: 200 60% 94%;
-    --foreground: 220 40% 13%;
+    /* ── Calm 8-bit pastel palette ── */
+    --background: 210 28% 88%;
+    /* soft slate-blue mist */
+    --foreground: 220 30% 18%;
+    /* dark ink */
 
-    --card: 45 100% 96%;
-    --card-foreground: 220 40% 13%;
+    --card: 210 25% 93%;
+    /* light cloudy white */
+    --card-foreground: 220 30% 18%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 40% 13%;
+    --popover: 210 25% 93%;
+    --popover-foreground: 220 30% 18%;
 
-    --primary: 45 100% 50%;
-    --primary-foreground: 220 40% 13%;
+    --primary: 162 35% 52%;
+    /* muted jade green */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 70% 50%;
+    --secondary: 220 40% 62%;
+    /* muted periwinkle blue */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 200 30% 88%;
-    --muted-foreground: 220 15% 40%;
+    --muted: 210 22% 82%;
+    --muted-foreground: 220 20% 42%;
 
-    --accent: 30 100% 55%;
+    --accent: 35 60% 58%;
+    /* warm amber */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 5 52% 58%;
+    /* muted coral/rust */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 30% 82%;
-    --input: 200 30% 82%;
-    --ring: 45 100% 50%;
+    --border: 210 20% 72%;
+    --input: 210 20% 72%;
+    --ring: 162 35% 52%;
 
-    --radius: 1rem;
+    --radius: 0px;
+    /* ← pixel-sharp: no rounded corners */
 
-    --duck-idle: 142 60% 45%;
-    --duck-running: 200 70% 50%;
-    --duck-maintenance: 0 75% 55%;
-    --pond: 200 65% 45%;
-    --pond-light: 200 65% 60%;
-    --pond-dark: 200 65% 30%;
+    /* Status colors */
+    --duck-idle: 162 38% 44%;
+    /* dusty jade */
+    --duck-running: 218 42% 58%;
+    /* periwinkle */
+    --duck-maintenance: 5 48% 55%;
+    /* faded coral */
+    --pond: 210 32% 72%;
+    --pond-light: 210 32% 80%;
+    --pond-dark: 210 32% 58%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Pixel-art shadow colors (used in .pixel-border) */
+    --px-shadow: 210 28% 55%;
+    --px-highlight: 0 0% 100%;
+
+    --sidebar-background: 210 25% 86%;
+    --sidebar-foreground: 220 30% 22%;
+    --sidebar-primary: 162 35% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 22% 80%;
+    --sidebar-accent-foreground: 220 30% 22%;
+    --sidebar-border: 210 20% 68%;
+    --sidebar-ring: 162 35% 52%;
   }
 
   .dark {
-    --background: 220 40% 8%;
-    --foreground: 45 50% 95%;
+    --background: 220 28% 10%;
+    --foreground: 210 30% 88%;
 
-    --card: 220 35% 12%;
-    --card-foreground: 45 50% 95%;
+    --card: 220 25% 14%;
+    --card-foreground: 210 30% 88%;
 
-    --popover: 220 35% 12%;
-    --popover-foreground: 45 50% 95%;
+    --popover: 220 25% 14%;
+    --popover-foreground: 210 30% 88%;
 
-    --primary: 45 100% 50%;
-    --primary-foreground: 220 40% 8%;
+    --primary: 162 38% 48%;
+    --primary-foreground: 220 28% 8%;
 
-    --secondary: 200 60% 40%;
+    --secondary: 218 40% 50%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 220 30% 18%;
-    --muted-foreground: 200 20% 60%;
+    --muted: 220 22% 20%;
+    --muted-foreground: 210 20% 55%;
 
-    --accent: 30 100% 55%;
+    --accent: 35 55% 52%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 5 48% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 30% 20%;
-    --input: 220 30% 20%;
-    --ring: 45 100% 50%;
+    --border: 220 22% 24%;
+    --input: 220 22% 24%;
+    --ring: 162 38% 48%;
 
-    --duck-idle: 142 60% 40%;
-    --duck-running: 200 60% 40%;
-    --duck-maintenance: 0 60% 40%;
-    --pond: 200 50% 25%;
-    --pond-light: 200 50% 35%;
-    --pond-dark: 200 50% 15%;
+    --duck-idle: 162 38% 42%;
+    --duck-running: 218 40% 52%;
+    --duck-maintenance: 5 45% 48%;
+    --pond: 220 30% 22%;
+    --pond-light: 220 30% 28%;
+    --pond-dark: 220 30% 14%;
 
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --px-shadow: 220 28% 8%;
+    --px-highlight: 220 28% 32%;
+
+    --sidebar-background: 220 28% 12%;
+    --sidebar-foreground: 210 30% 85%;
+    --sidebar-primary: 162 38% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 220 22% 18%;
+    --sidebar-accent-foreground: 210 30% 85%;
+    --sidebar-border: 220 22% 20%;
+    --sidebar-ring: 162 38% 48%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    image-rendering: pixelated;
   }
 
   body {
     @apply bg-background text-foreground font-body;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  /* Make Press Start 2P render crisply at small sizes */
+  .font-display {
+    font-size: 0.6rem;
+    letter-spacing: 0.02em;
+  }
+
+  h1.font-display {
+    font-size: 0.75rem;
+  }
+
+  h2.font-display {
+    font-size: 0.6rem;
   }
 }
 
 @layer components {
+
+  /* ── Pixel-art layered border ── */
+  /* Use this class for that chunky NES-border look */
+  .pixel-border {
+    border: 2px solid hsl(var(--border));
+    box-shadow:
+      /* inner highlight (top-left) */
+      inset 2px 2px 0px hsl(var(--px-highlight) / 0.6),
+      /* inner shadow (bottom-right) */
+      inset -2px -2px 0px hsl(var(--px-shadow) / 0.5),
+      /* outer shadow (depth) */
+      3px 3px 0px hsl(var(--px-shadow) / 0.8);
+  }
+
+  .pixel-border-idle {
+    border: 2px solid hsl(var(--duck-idle));
+    box-shadow:
+      inset 2px 2px 0px hsl(var(--px-highlight) / 0.5),
+      inset -2px -2px 0px hsl(var(--duck-idle) / 0.5),
+      3px 3px 0px hsl(var(--duck-idle) / 0.5);
+  }
+
+  .pixel-border-running {
+    border: 2px solid hsl(var(--duck-running));
+    box-shadow:
+      inset 2px 2px 0px hsl(var(--px-highlight) / 0.5),
+      inset -2px -2px 0px hsl(var(--duck-running) / 0.5),
+      3px 3px 0px hsl(var(--duck-running) / 0.5);
+  }
+
+  .pixel-border-maintenance {
+    border: 2px solid hsl(var(--duck-maintenance));
+    box-shadow:
+      inset 2px 2px 0px hsl(var(--px-highlight) / 0.4),
+      inset -2px -2px 0px hsl(var(--duck-maintenance) / 0.4),
+      3px 3px 0px hsl(var(--duck-maintenance) / 0.4);
+  }
+
+  /* Pixel-art button 3D press effect */
+  .pixel-btn {
+    border: 2px solid hsl(var(--border));
+    box-shadow: 3px 3px 0px hsl(var(--px-shadow) / 0.9);
+    transition: box-shadow 0.06s, transform 0.06s;
+  }
+
+  .pixel-btn:active {
+    box-shadow: 0px 0px 0px hsl(var(--px-shadow));
+    transform: translate(3px, 3px);
+  }
+
+  /* Pond / tile background */
   .pond-bg {
-    background: linear-gradient(
-      180deg,
-      hsl(var(--pond-light)) 0%,
-      hsl(var(--pond)) 50%,
-      hsl(var(--pond-dark)) 100%
-    );
+    background-color: hsl(var(--pond));
+    background-image:
+      linear-gradient(hsl(var(--pond-dark) / 0.15) 1px,
+        transparent 1px),
+      linear-gradient(90deg,
+        hsl(var(--pond-dark) / 0.15) 1px,
+        transparent 1px);
+    background-size: 16px 16px;
   }
 
-  .duck-glow-idle {
-    box-shadow: 0 0 15px 3px hsl(var(--duck-idle) / 0.4);
-  }
-
-  .duck-glow-running {
-    box-shadow: 0 0 15px 3px hsl(var(--duck-running) / 0.5);
-  }
-
-  .duck-glow-maintenance {
-    box-shadow: 0 0 10px 2px hsl(var(--duck-maintenance) / 0.3);
-  }
-
+  /* Caution tape — maintenance stripes */
   .caution-tape {
-    background: repeating-linear-gradient(
-      -45deg,
-      hsl(45 100% 50%),
-      hsl(45 100% 50%) 10px,
-      hsl(220 40% 13%) 10px,
-      hsl(220 40% 13%) 20px
-    );
+    background: repeating-linear-gradient(-45deg,
+        hsl(35 70% 60%),
+        hsl(35 70% 60%) 8px,
+        hsl(220 30% 18%) 8px,
+        hsl(220 30% 18%) 16px);
   }
 
-  .whirlpool {
-    background: radial-gradient(
-      circle,
-      transparent 30%,
-      hsl(var(--duck-running) / 0.15) 50%,
-      hsl(var(--duck-running) / 0.3) 70%,
-      transparent 100%
-    );
+  /* Scanline overlay for the pond area */
+  .scanlines::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(180deg,
+        transparent,
+        transparent 3px,
+        hsl(220 30% 10% / 0.04) 3px,
+        hsl(220 30% 10% / 0.04) 4px);
+    z-index: 1;
   }
 }
 
+/* ──────────────────────────────────────────────────────
+   8-bit ANIMATIONS
+   Stepped timing-function gives pixel/frame-by-frame feel
+─────────────────────────────────────────────────────── */
+
+/* Slow, chunky duck bob — 4 distinct frames */
 @keyframes duck-bob {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-8px) rotate(2deg); }
+  0% {
+    transform: translateY(0px) rotate(-2deg);
+  }
+
+  25% {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-6px) rotate(2deg);
+  }
+
+  75% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(-2deg);
+  }
 }
 
+/* Spin for running — kept smooth but slower */
 @keyframes duck-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
+/* Maintenance wobble */
 @keyframes duck-wobble {
-  0%, 100% { transform: rotate(175deg); }
-  25% { transform: rotate(180deg); }
-  75% { transform: rotate(170deg); }
+
+  0%,
+  100% {
+    transform: rotate(175deg);
+  }
+
+  25% {
+    transform: rotate(180deg);
+  }
+
+  75% {
+    transform: rotate(170deg);
+  }
+}
+
+/* Stepped border blink for running machines */
+@keyframes pixel-march {
+  0% {
+    border-color: hsl(var(--duck-running));
+  }
+
+  49% {
+    border-color: hsl(var(--duck-running));
+  }
+
+  50% {
+    border-color: hsl(var(--duck-running) / 0.2);
+  }
+
+  99% {
+    border-color: hsl(var(--duck-running) / 0.2);
+  }
+
+  100% {
+    border-color: hsl(var(--duck-running));
+  }
+}
+
+/* Pixel cursor blink */
+@keyframes pixel-blink {
+
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 @keyframes whirlpool-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes wave {
-  0%, 100% { transform: translateX(0) translateY(0); }
-  25% { transform: translateX(-5px) translateY(-3px); }
-  50% { transform: translateX(0) translateY(-5px); }
-  75% { transform: translateX(5px) translateY(-3px); }
+
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+
+  25% {
+    transform: translateX(-4px) translateY(-2px);
+  }
+
+  50% {
+    transform: translateX(0) translateY(-4px);
+  }
+
+  75% {
+    transform: translateX(4px) translateY(-2px);
+  }
 }
 
 @keyframes ripple {
-  0% { transform: scale(0.8); opacity: 1; }
-  100% { transform: scale(2); opacity: 0; }
-}
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
 
-@keyframes pulse-border {
-  0%, 100% { border-color: hsl(var(--duck-running)); }
-  50% { border-color: hsl(var(--duck-running) / 0.3); }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 @keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ──────────────────────────────────────────────────────
+   OVAL POND — DUCK ANIMATIONS
+─────────────────────────────────────────────────────── */
+
+/* Idle / wander: gentle figure-drift at their spot */
+@keyframes duck-wander {
+  0% {
+    transform: translate(0px, 0px) rotate(-3deg);
+  }
+
+  20% {
+    transform: translate(4px, -5px) rotate(3deg);
+  }
+
+  40% {
+    transform: translate(-3px, -8px) rotate(-2deg);
+  }
+
+  60% {
+    transform: translate(5px, -3px) rotate(4deg);
+  }
+
+  80% {
+    transform: translate(-4px, 3px) rotate(-3deg);
+  }
+
+  100% {
+    transform: translate(0px, 0px) rotate(-3deg);
+  }
+}
+
+/* Swim clockwise around the oval (8 waypoints = stepped pixel feel) */
+@keyframes swim-cw {
+  0% {
+    transform: translate(42%, 0%);
+  }
+
+  12% {
+    transform: translate(28%, -22%);
+  }
+
+  25% {
+    transform: translate(0%, -32%);
+  }
+
+  37% {
+    transform: translate(-28%, -22%);
+  }
+
+  50% {
+    transform: translate(-42%, 0%);
+  }
+
+  62% {
+    transform: translate(-28%, 22%);
+  }
+
+  75% {
+    transform: translate(0%, 32%);
+  }
+
+  87% {
+    transform: translate(28%, 22%);
+  }
+
+  100% {
+    transform: translate(42%, 0%);
+  }
+}
+
+/* Swim counter-clockwise (alternate so pond doesn't look like a carousel) */
+@keyframes swim-ccw {
+  0% {
+    transform: translate(-42%, 0%);
+  }
+
+  12% {
+    transform: translate(-28%, 22%);
+  }
+
+  25% {
+    transform: translate(0%, 32%);
+  }
+
+  37% {
+    transform: translate(28%, 22%);
+  }
+
+  50% {
+    transform: translate(42%, 0%);
+  }
+
+  62% {
+    transform: translate(28%, -22%);
+  }
+
+  75% {
+    transform: translate(0%, -32%);
+  }
+
+  87% {
+    transform: translate(-28%, -22%);
+  }
+
+  100% {
+    transform: translate(-42%, 0%);
+  }
+}
+
+/* Duck flip so it faces the direction of movement without rolling */
+@keyframes flip-cw {
+
+  0%,
+  49.9% {
+    transform: scaleX(-1);
+  }
+
+  50%,
+  99.9% {
+    transform: scaleX(1);
+  }
+
+  100% {
+    transform: scaleX(-1);
+  }
+}
+
+@keyframes flip-ccw {
+
+  0%,
+  49.9% {
+    transform: scaleX(1);
+  }
+
+  50%,
+  99.9% {
+    transform: scaleX(-1);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Duck color filters */
+.duck-washer {
+  filter: hue-rotate(195deg) saturate(2.2) brightness(1.05);
+}
+
+.duck-dryer {
+  filter: hue-rotate(340deg) saturate(2.4) brightness(1.05);
+}
+
+.duck-maint {
+  filter: grayscale(100%) brightness(0.75);
 }

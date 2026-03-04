@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        display: ["Fredoka", "sans-serif"],
-        body: ["Nunito", "sans-serif"],
+        display: ['"Press Start 2P"', "monospace"],
+        body: ["VT323", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -73,9 +73,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0px",
+        md: "0px",
+        sm: "0px",
       },
       keyframes: {
         "accordion-down": {
@@ -87,8 +87,11 @@ export default {
           to: { height: "0" },
         },
         "duck-bob": {
-          "0%, 100%": { transform: "translateY(0) rotate(-2deg)" },
-          "50%": { transform: "translateY(-8px) rotate(2deg)" },
+          "0%": { transform: "translateY(0px) rotate(-2deg)" },
+          "25%": { transform: "translateY(-4px) rotate(-2deg)" },
+          "50%": { transform: "translateY(-6px) rotate(2deg)" },
+          "75%": { transform: "translateY(-4px) rotate(2deg)" },
+          "100%": { transform: "translateY(0px) rotate(-2deg)" },
         },
         "duck-spin": {
           "0%": { transform: "rotate(0deg)" },
@@ -103,12 +106,22 @@ export default {
           "0%": { transform: "rotate(0deg)" },
           "100%": { transform: "rotate(360deg)" },
         },
-        "pulse-border": {
-          "0%, 100%": { borderColor: "hsl(var(--duck-running))" },
-          "50%": { borderColor: "hsl(var(--duck-running) / 0.3)" },
+        "pixel-march": {
+          "0%, 49%": { borderColor: "hsl(var(--duck-running))" },
+          "50%, 99%": { borderColor: "hsl(var(--duck-running) / 0.2)" },
+        },
+        "pixel-blink": {
+          "0%, 49%": { opacity: "1" },
+          "50%, 100%": { opacity: "0" },
+        },
+        "pixel-bob": {
+          "0%": { transform: "translateY(0px)" },
+          "33%": { transform: "translateY(-4px)" },
+          "66%": { transform: "translateY(-6px)" },
+          "100%": { transform: "translateY(0px)" },
         },
         "fade-in-up": {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "0%": { opacity: "0", transform: "translateY(12px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         ripple: {
@@ -119,13 +132,15 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "duck-bob": "duck-bob 3s ease-in-out infinite",
-        "duck-spin": "duck-spin 1.5s linear infinite",
-        "duck-wobble": "duck-wobble 2s ease-in-out infinite",
-        "whirlpool-spin": "whirlpool-spin 3s linear infinite",
-        "pulse-border": "pulse-border 2s ease-in-out infinite",
-        "fade-in-up": "fade-in-up 0.5s ease-out forwards",
-        ripple: "ripple 1.5s ease-out infinite",
+        "duck-bob": "duck-bob 2.4s steps(4, end) infinite",
+        "duck-spin": "duck-spin 2s linear infinite",
+        "duck-wobble": "duck-wobble 2.5s steps(4, end) infinite",
+        "whirlpool-spin": "whirlpool-spin 4s linear infinite",
+        "pixel-march": "pixel-march 1s steps(2, end) infinite",
+        "pixel-blink": "pixel-blink 1s steps(2, end) infinite",
+        "pixel-bob": "pixel-bob 1.6s steps(3, end) infinite",
+        "fade-in-up": "fade-in-up 0.3s ease-out forwards",
+        ripple: "ripple 2s ease-out infinite",
       },
     },
   },

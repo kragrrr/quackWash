@@ -9,16 +9,28 @@ const StatusStrip = ({ machines }: StatusStripProps) => {
   const running = machines.filter((m) => m.status === "Running").length;
   const down = machines.filter((m) => m.status === "Maintenance").length;
 
+  const chipStyle = (color: string): React.CSSProperties => ({
+    border: `2px solid ${color}`,
+    boxShadow: `2px 2px 0px ${color}80`,
+    padding: "4px 10px",
+    fontFamily: '"Press Start 2P", monospace',
+    fontSize: "0.45rem",
+    letterSpacing: "0.02em",
+    lineHeight: 1.6,
+    background: `${color}18`,
+    color,
+  });
+
   return (
-    <div className="flex justify-center gap-2 px-4 py-3">
-      <div className="bg-duck-idle/15 border border-duck-idle/30 text-duck-idle rounded-full px-3 py-1 text-xs font-display font-bold">
-        {available} Available
+    <div className="flex justify-center gap-3 px-4 py-3">
+      <div style={chipStyle("hsl(var(--duck-idle))")}>
+        ▶ {available} AVAIL
       </div>
-      <div className="bg-duck-running/15 border border-duck-running/30 text-duck-running rounded-full px-3 py-1 text-xs font-display font-bold">
-        {running} Running
+      <div style={chipStyle("hsl(var(--duck-running))")}>
+        ◉ {running} RUN
       </div>
-      <div className="bg-duck-maintenance/15 border border-duck-maintenance/30 text-duck-maintenance rounded-full px-3 py-1 text-xs font-display font-bold">
-        {down} Down
+      <div style={chipStyle("hsl(var(--duck-maintenance))")}>
+        ✖ {down} DOWN
       </div>
     </div>
   );
