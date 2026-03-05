@@ -1,4 +1,5 @@
 import http from "node:http";
+import https from "node:https";
 import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
@@ -26,9 +27,31 @@ const MIME_TYPES = {
     ".webmanifest": "application/manifest+json",
 };
 
+// Proxy /api/tangerpay/* → https://app.tangerpay.com/api/*
+function proxyTangerpay(req, res, apiPath) {
+    const targetUrl = `https://app.tangerpay.com/api${apiPath}`;
+
+    https
+        .get(targetUrl, (proxyRes) => {
+            res.writeHead(proxyRes.statusCode, proxyRes.headers);
+            proxyRes.pipe(res);
+        })
+        .on("error", (err) => {
+            console.error("Proxy error:", err.message);
+            res.writeHead(502);
+            res.end("Bad Gateway");
+        });
+}
+
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = decodeURIComponent(parsedUrl.pathname);
+
+    // Handle API proxy
+    if (pathname.startsWith("/api/tangerpay")) {
+        const apiPath = pathname.replace(/^\/api\/tangerpay/, "");
+        return proxyTangerpay(req, res, apiPath);
+    }
 
     // Resolve the file path within dist/
     const filePath = path.join(DIST_DIR, pathname);
