@@ -1,8 +1,10 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
-const url = require("url");
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import url from "node:url";
+import { fileURLToPath } from "node:url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, "dist");
 
 const MIME_TYPES = {
@@ -26,10 +28,10 @@ const MIME_TYPES = {
 
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
-    let pathname = decodeURIComponent(parsedUrl.pathname);
+    const pathname = decodeURIComponent(parsedUrl.pathname);
 
     // Resolve the file path within dist/
-    let filePath = path.join(DIST_DIR, pathname);
+    const filePath = path.join(DIST_DIR, pathname);
 
     fs.stat(filePath, (err, stats) => {
         if (!err && stats.isFile()) {
