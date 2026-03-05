@@ -21,6 +21,7 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
         # Optional: Specify the local folder to upload if you only want to upload a build directory (e.g., 'dist/' or 'build/')
         # local-dir: ./dist/ 
         # Optional: Exclude specific files or directories
