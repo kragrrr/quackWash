@@ -31,6 +31,7 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
         # This ensures ONLY the compiled Vite production files are uploaded
         local-dir: ./dist/ 
         # This uploads directly to the root folder your FTP account is locked to
