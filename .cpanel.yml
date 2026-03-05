@@ -1,0 +1,10 @@
+---
+deployment:
+  tasks:
+    # Recreate public_html if it was deleted
+    - /bin/mkdir -p $HOME/public_html
+    # Install deps (including devDependencies needed for build) and build
+    - source $HOME/nodevenv/quackWash-repo/20/bin/activate && npm install --production=false && npm run build
+    # Clear old files and copy fresh build output
+    - /bin/rm -rf $HOME/public_html/*
+    - /bin/cp -R dist/* $HOME/public_html/
