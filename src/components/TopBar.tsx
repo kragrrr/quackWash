@@ -1,14 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Bell } from "lucide-react";
-import { useBreadcrumbs } from "@/contexts/BreadcrumbContext";
 
 interface TopBarProps {
   notifications: number;
 }
 
 const TopBar = ({ notifications }: TopBarProps) => {
-  const { breadcrumbs } = useBreadcrumbs();
-
   return (
     <header
       className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between"
@@ -31,24 +28,6 @@ const TopBar = ({ notifications }: TopBarProps) => {
 
       {/* Right side */}
       <div className="flex items-center gap-3">
-        {/* Breadcrumb balance — pixel chip */}
-        <div
-          className="pixel-border flex items-center gap-1.5 px-2 py-1"
-          style={{
-            background: "hsl(var(--primary-foreground) / 0.12)",
-            border: "2px solid hsl(var(--primary-foreground) / 0.5)",
-            boxShadow: "2px 2px 0px hsl(var(--px-shadow, 210 28% 35%) / 0.8)",
-          }}
-        >
-          <span className="text-sm">🍞</span>
-          <span
-            className="font-display text-primary-foreground leading-none"
-            style={{ fontSize: "0.55rem" }}
-          >
-            {breadcrumbs}
-          </span>
-        </div>
-
         {/* Notification bell */}
         <button
           className="relative p-1"

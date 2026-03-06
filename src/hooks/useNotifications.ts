@@ -2,11 +2,9 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { Machine } from "@/data/mockData";
 
 const STORAGE_KEY = "quackwash_watches";
-const EMPTY_POND_KEY = "quackwash_empty_pond";
 
 interface WatchState {
     watchedMachineIds: string[];
-    emptyPondEnabled: boolean;
 }
 
 function loadState(): WatchState {
@@ -14,7 +12,7 @@ function loadState(): WatchState {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) return JSON.parse(raw);
     } catch { }
-    return { watchedMachineIds: [], emptyPondEnabled: false };
+    return { watchedMachineIds: [] };
 }
 
 function saveState(state: WatchState) {
@@ -65,11 +63,6 @@ export function useNotifications(machines: Machine[]) {
         return new Set(state.watchedMachineIds);
     });
 
-    const [emptyPondEnabled, setEmptyPondEnabled] = useState<boolean>(() => {
-        const state = loadState();
-        return state.emptyPondEnabled;
-    });
-
     // Track previous machine states to detect transitions
     const prevMachinesRef = useRef<Map<string, Machine>>(new Map());
     // Track which machines we've already notified about (to avoid repeat alerts)
@@ -79,9 +72,8 @@ export function useNotifications(machines: Machine[]) {
     useEffect(() => {
         saveState({
             watchedMachineIds: Array.from(watchedIds),
-            emptyPondEnabled,
         });
-    }, [watchedIds, emptyPondEnabled]);
+    }, [watchedIds]);
 
     // Register SW on mount
     useEffect(() => {
@@ -97,7 +89,7 @@ export function useNotifications(machines: Machine[]) {
         for (const machine of machines) {
             const prev = prevMap.get(machine.id);
 
-            // "Watch this Duck": machine was running and now is idle (or minutes hit 0)
+            // "Watch this Duck": machine was running and now is idle
             if (
                 watchedIds.has(machine.id) &&
                 prev &&
@@ -112,22 +104,6 @@ export function useNotifications(machines: Machine[]) {
                     `watch-${machine.id}`
                 );
             }
-
-            // "Empty Pond": any machine flipping from Running to Idle
-            if (
-                emptyPondEnabled &&
-                prev &&
-                prev.status === "Running" &&
-                machine.status === "Idle" &&
-                !notifiedRef.current.has(`pond-${machine.id}`)
-            ) {
-                notifiedRef.current.add(`pond-${machine.id}`);
-                sendNotification(
-                    "🦆 A duck just became free!",
-                    `${machine.name} is now available. Go grab it!`,
-                    `pond-${machine.id}`
-                );
-            }
         }
 
         // Update prev map for next comparison
@@ -139,13 +115,12 @@ export function useNotifications(machines: Machine[]) {
 
         // Clean up notification dedup for machines that are running again
         for (const id of notifiedRef.current) {
-            const cleanId = id.replace("pond-", "");
-            const machine = machines.find((m) => m.id === cleanId);
+            const machine = machines.find((m) => m.id === id);
             if (machine && machine.status === "Running") {
                 notifiedRef.current.delete(id);
             }
         }
-    }, [machines, watchedIds, emptyPondEnabled]);
+    }, [machines, watchedIds]);
 
     const watchMachine = useCallback(async (machineId: string) => {
         await ensureNotificationPermission();
@@ -167,21 +142,6 @@ export function useNotifications(machines: Machine[]) {
         notifiedRef.current.delete(machineId);
     }, []);
 
-    const toggleEmptyPond = useCallback(async (enabled: boolean) => {
-        if (enabled) {
-            await ensureNotificationPermission();
-        }
-        setEmptyPondEnabled(enabled);
-        // Clear pond notification dedup when toggling off
-        if (!enabled) {
-            for (const id of notifiedRef.current) {
-                if (id.startsWith("pond-")) {
-                    notifiedRef.current.delete(id);
-                }
-            }
-        }
-    }, []);
-
     const isWatched = useCallback(
         (machineId: string) => watchedIds.has(machineId),
         [watchedIds]
@@ -189,10 +149,8 @@ export function useNotifications(machines: Machine[]) {
 
     return {
         watchedIds,
-        emptyPondEnabled,
         watchMachine,
         unwatchMachine,
-        toggleEmptyPond,
         isWatched,
         watchedCount: watchedIds.size,
     };

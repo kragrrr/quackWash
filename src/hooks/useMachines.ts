@@ -65,6 +65,9 @@ async function fetchMachines(): Promise<Machine[]> {
 }
 
 export function useMachines() {
+    // Dev mode: add ?dev to URL to force all machines idle
+    const isDevMode = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("dev");
+
     const query = useQuery<Machine[]>({
         queryKey: ["machines"],
         queryFn: fetchMachines,
@@ -73,6 +76,9 @@ export function useMachines() {
         staleTime: 30_000,
         // If the query fails, keep previous data visible (stale-while-revalidate)
         placeholderData: (prev) => prev,
+        select: isDevMode
+            ? (data) => data.map((m) => ({ ...m, status: "Idle" as const, cycleMinutesRemaining: undefined }))
+            : undefined,
     });
 
     // Show a toast when the query enters an error state

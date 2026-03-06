@@ -9,14 +9,6 @@ export interface Machine {
   cycleMinutesRemaining?: number;
 }
 
-export interface DuckCosmetic {
-  id: string;
-  name: string;
-  emoji: string;
-  unlocked: boolean;
-  cost: number;
-}
-
 export const MOCK_MACHINES: Machine[] = [
   { id: "w1", name: "Washer 1", type: "Washer", status: "Idle" },
   { id: "w2", name: "Washer 2", type: "Washer", status: "Running", cycleMinutesRemaining: 23 },
@@ -30,13 +22,3 @@ export const MOCK_MACHINES: Machine[] = [
   { id: "d5", name: "Dryer 5", type: "Dryer", status: "Idle" },
   { id: "d6", name: "Dryer 6", type: "Dryer", status: "Maintenance" },
 ];
-
-export const DUCK_COSMETICS: DuckCosmetic[] = [
-  { id: "pirate", name: "Pirate Duck", emoji: "🏴‍☠️", unlocked: false, cost: 50 },
-  { id: "propeller", name: "Propeller Hat Duck", emoji: "🧢", unlocked: false, cost: 30 },
-  { id: "sunglasses", name: "Cool Duck", emoji: "😎", unlocked: false, cost: 20 },
-  { id: "crown", name: "Royal Duck", emoji: "👑", unlocked: false, cost: 100 },
-];
-
-export const MOCK_BREADCRUMBS = 42;
-export const MOCK_NOTIFICATIONS = 3;

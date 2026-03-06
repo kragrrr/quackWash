@@ -1,7 +1,7 @@
 import { Machine } from "@/data/mockData";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Gift } from "lucide-react";
+import { Bell, BellOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface DuckDrawerProps {
@@ -11,8 +11,6 @@ interface DuckDrawerProps {
   isWatched?: boolean;
   onWatch?: (machineId: string) => void;
   onUnwatch?: (machineId: string) => void;
-  canClaim?: boolean;
-  onClaim?: (machineId: string) => void;
 }
 
 const pixelBtnBase: React.CSSProperties = {
@@ -33,8 +31,6 @@ const DuckDrawer = ({
   isWatched = false,
   onWatch,
   onUnwatch,
-  canClaim = false,
-  onClaim,
 }: DuckDrawerProps) => {
   const { toast } = useToast();
 
@@ -56,17 +52,6 @@ const DuckDrawer = ({
       toast({
         title: "🔔 Watching this duck!",
         description: `We'll quack at you when ${machine.name} is done.`,
-      });
-    }
-    onOpenChange(false);
-  };
-
-  const handleClaim = () => {
-    if (onClaim) {
-      onClaim(machine.id);
-      toast({
-        title: "🍞 +10 Breadcrumbs!",
-        description: `Great job clearing ${machine.name} quickly!`,
       });
     }
     onOpenChange(false);
@@ -181,25 +166,6 @@ const DuckDrawer = ({
         </div>
 
         <DrawerFooter>
-          {/* Claim breadcrumbs */}
-          {canClaim && isIdle && (
-            <Button
-              onClick={handleClaim}
-              className="pixel-btn w-full gap-2"
-              style={{
-                ...pixelBtnBase,
-                background: "hsl(var(--accent))",
-                color: "hsl(var(--accent-foreground))",
-                border: "2px solid hsl(var(--accent-foreground) / 0.3)",
-                boxShadow: "3px 3px 0px hsl(var(--px-shadow) / 0.8)",
-                padding: "10px 0",
-              }}
-            >
-              <Gift className="w-3 h-3" />
-              CLAIM 🍞 10 BREADCRUMBS
-            </Button>
-          )}
-
           {/* Watch / Unwatch */}
           {isRunning && (
             <Button
