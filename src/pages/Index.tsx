@@ -40,9 +40,9 @@ const Index = () => {
           <div className="text-center space-y-4">
             <span className="text-5xl animate-duck-bob inline-block">🦆</span>
             <p
+              className="text-[0.65rem] sm:text-sm"
               style={{
                 fontFamily: '"Press Start 2P", monospace',
-                fontSize: "0.55rem",
                 color: "hsl(var(--muted-foreground))",
                 letterSpacing: "0.06em",
               }}
@@ -51,7 +51,7 @@ const Index = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div >
     );
   }
 
@@ -64,15 +64,15 @@ const Index = () => {
         {/* Legend */}
         <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-1">
           <div className="flex items-center gap-1.5">
-            <PixelDuck className="text-xl" style={{ filter: "hue-rotate(170deg) saturate(2.8) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
-            <span style={{ fontFamily: "VT323, monospace", fontSize: "0.85rem", color: "hsl(210 45% 36%)" }}>= Washer</span>
+            <PixelDuck className="text-xl sm:text-2xl" style={{ filter: "hue-rotate(170deg) saturate(2.8) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
+            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(210 45% 36%)" }}>= Washer</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <PixelDuck className="text-xl" style={{ filter: "hue-rotate(330deg) saturate(3) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
-            <span style={{ fontFamily: "VT323, monospace", fontSize: "0.85rem", color: "hsl(28 45% 38%)" }}>= Dryer</span>
+            <PixelDuck className="text-xl sm:text-2xl" style={{ filter: "hue-rotate(330deg) saturate(3) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
+            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(28 45% 38%)" }}>= Dryer</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span style={{ fontFamily: "VT323, monospace", fontSize: "0.85rem", color: "hsl(var(--muted-foreground))" }}>idle = floating • in-use = swimming</span>
+            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(var(--muted-foreground))" }}>idle = floating • in-use = swimming</span>
           </div>
         </div>
 

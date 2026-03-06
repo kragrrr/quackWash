@@ -14,7 +14,6 @@ const StatusStrip = ({ machines }: StatusStripProps) => {
     boxShadow: `2px 2px 0px ${color}80`,
     padding: "4px 10px",
     fontFamily: '"Press Start 2P", monospace',
-    fontSize: "0.45rem",
     letterSpacing: "0.02em",
     lineHeight: 1.6,
     background: `${color}18`,
@@ -22,14 +21,14 @@ const StatusStrip = ({ machines }: StatusStripProps) => {
   });
 
   return (
-    <div className="flex justify-center gap-3 px-4 py-3">
-      <div style={chipStyle("hsl(var(--duck-idle))")}>
+    <div className="flex justify-center gap-3 px-4 py-3 text-[0.6rem] sm:text-xs md:text-sm">
+      <div style={chipStyle("hsl(var(--duck-idle))")} className="flex items-center">
         ▶ {available} AVAIL
       </div>
-      <div style={chipStyle("hsl(var(--duck-running))")}>
+      <div style={chipStyle("hsl(var(--duck-running))")} className="flex items-center">
         ◉ {running} RUN
       </div>
-      <div style={chipStyle("hsl(var(--duck-maintenance))")}>
+      <div style={chipStyle("hsl(var(--duck-maintenance))")} className="flex items-center">
         ✖ {down} DOWN
       </div>
     </div>

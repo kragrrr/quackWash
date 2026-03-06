@@ -19,8 +19,7 @@ const TopBar = ({ notifications }: TopBarProps) => {
       <div className="flex items-center gap-2">
         <span className="text-xl" style={{ imageRendering: "pixelated" }}>🦆</span>
         <h1
-          className="font-display text-primary-foreground tracking-tight leading-none"
-          style={{ fontSize: "0.65rem" }}
+          className="font-display text-primary-foreground tracking-tight leading-none text-sm sm:text-lg md:text-xl"
         >
           QuackWash
         </h1>
