@@ -23,7 +23,7 @@ npm install --production=false
 # Clean and build
 echo "→ Building..."
 rm -rf dist
-npm run build
+GOMAXPROCS=1 npm run build
 
 # Restart Passenger
 echo "→ Restarting app..."

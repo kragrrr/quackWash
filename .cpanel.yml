@@ -2,4 +2,4 @@
 deployment:
   tasks:
     # Activate Node, clean old build, install deps, build, and restart Passenger
-    - source $HOME/nodevenv/quackWash-repo/20/bin/activate && cd $HOME/quackWash-repo && rm -rf dist && npm install --production=false && npm run build && mkdir -p tmp && touch tmp/restart.txt
+    - source $HOME/nodevenv/quackWash-repo/20/bin/activate && cd $HOME/quackWash-repo && rm -rf dist && npm install --production=false && GOMAXPROCS=1 npm run build && mkdir -p tmp && touch tmp/restart.txt
