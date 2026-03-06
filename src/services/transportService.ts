@@ -19,9 +19,8 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
         // 250019 = UOW Northfields Ave Stand A (From UOW)
         // Using the real-time departure API. Note: Due to CORS, direct browser fetch to TfNSW may fail unless proxied.
         // If it fails, we will fall back to mock data.
-        const apiUrl = import.meta.env.MODE === "development"
-            ? `/api/tfnsw/departure_mon?outputFormat=rapidJSON&coordOutputFormat=EPSG%3A4326&mode=direct&type_dm=stop&name_dm=${stopId}&departureMonitorMacro=true&TfNSWTR=true&version=10.2.1.42`
-            : `https://api.transport.nsw.gov.au/v1/tp/departure_mon?outputFormat=rapidJSON&coordOutputFormat=EPSG%3A4326&mode=direct&type_dm=stop&name_dm=${stopId}&departureMonitorMacro=true&TfNSWTR=true&version=10.2.1.42`;
+        // We always use the proxy (local Vite dev server or app.js prod server) to prevent CORS
+        const apiUrl = `/api/tfnsw/departure_mon?outputFormat=rapidJSON&coordOutputFormat=EPSG%3A4326&mode=direct&type_dm=stop&name_dm=${stopId}&departureMonitorMacro=true&TfNSWTR=true&version=10.2.1.42`;
 
         const response = await fetch(apiUrl, {
             headers: {

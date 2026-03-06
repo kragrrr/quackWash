@@ -27,7 +27,6 @@ const MIME_TYPES = {
     ".webmanifest": "application/manifest+json",
 };
 
-// Proxy /api/tangerpay/* → https://app.tangerpay.com/api/*
 function proxyTangerpay(req, res, apiPath) {
     const targetUrl = `https://app.tangerpay.com/api${apiPath}`;
 
@@ -43,14 +42,52 @@ function proxyTangerpay(req, res, apiPath) {
         });
 }
 
+// Proxy /api/tfnsw/* → https://api.transport.nsw.gov.au/v1/tp/*
+function proxyTfnsw(req, res, apiPath) {
+    const targetUrl = new URL(`https://api.transport.nsw.gov.au/v1/tp${apiPath}`);
+
+    const options = {
+        hostname: targetUrl.hostname,
+        path: targetUrl.pathname + targetUrl.search,
+        method: req.method,
+        headers: {
+            ...req.headers,
+            host: targetUrl.hostname
+        }
+    };
+
+    const proxyReq = https.request(options, (proxyRes) => {
+        // Set CORS headers so the local app can consume it
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        proxyRes.pipe(res);
+    });
+
+    proxyReq.on("error", (err) => {
+        console.error("TfNSW Proxy error:", err.message);
+        res.writeHead(502);
+        res.end("Bad Gateway");
+    });
+
+    req.pipe(proxyReq);
+}
+
+
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = decodeURIComponent(parsedUrl.pathname);
 
     // Handle API proxy
     if (pathname.startsWith("/api/tangerpay")) {
-        const apiPath = pathname.replace(/^\/api\/tangerpay/, "");
+        // Extract the path including query parameters from req.url
+        const apiPath = req.url.replace(/^\/api\/tangerpay/, "");
         return proxyTangerpay(req, res, apiPath);
+    }
+
+    if (pathname.startsWith("/api/tfnsw")) {
+        // Extract the path including query parameters from req.url
+        const apiPath = req.url.replace(/^\/api\/tfnsw/, "");
+        return proxyTfnsw(req, res, apiPath);
     }
 
     // Resolve the file path within dist/
