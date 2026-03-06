@@ -5,7 +5,6 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 interface PondSceneProps {
     machines: Machine[];
     onDuckClick: (machine: Machine) => void;
-    isWatched: (id: string) => boolean;
 }
 
 /** Color filter strings — combined inline to avoid CSS override */
@@ -117,7 +116,6 @@ const LABEL: Record<string, string> = {
 export default function PondScene({
     machines,
     onDuckClick,
-    isWatched,
 }: PondSceneProps) {
     const [swimStates, setSwimStates] = useState<Map<string, DuckSwimState>>(new Map());
     const timerRefs = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -264,11 +262,6 @@ export default function PondScene({
                                 }}
                                 aria-label={`${machine.name} – ${machine.status}`}
                             >
-                                {/* Watch pip */}
-                                {isWatched(machine.id) && isRunning && (
-                                    <span style={{ fontSize: "12px", lineHeight: 1, marginBottom: "1px" }}>👁️</span>
-                                )}
-
                                 {/* Timer badge */}
                                 {isRunning && machine.cycleMinutesRemaining != null && (
                                     <span

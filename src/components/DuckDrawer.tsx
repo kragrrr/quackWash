@@ -8,9 +8,6 @@ interface DuckDrawerProps {
   machine: Machine | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  isWatched?: boolean;
-  onWatch?: (machineId: string) => void;
-  onUnwatch?: (machineId: string) => void;
 }
 
 const pixelBtnBase: React.CSSProperties = {
@@ -28,9 +25,6 @@ const DuckDrawer = ({
   machine,
   open,
   onOpenChange,
-  isWatched = false,
-  onWatch,
-  onUnwatch,
 }: DuckDrawerProps) => {
   const { toast } = useToast();
 
@@ -41,19 +35,6 @@ const DuckDrawer = ({
   const isMaintenance = machine.status === "Maintenance";
 
   const handleWatch = () => {
-    if (isWatched && onUnwatch) {
-      onUnwatch(machine.id);
-      toast({
-        title: "🔕 Unwatched this duck",
-        description: `You'll no longer be notified about ${machine.name}.`,
-      });
-    } else if (onWatch) {
-      onWatch(machine.id);
-      toast({
-        title: "🔔 Watching this duck!",
-        description: `We'll quack at you when ${machine.name} is done.`,
-      });
-    }
     onOpenChange(false);
   };
 
@@ -166,34 +147,7 @@ const DuckDrawer = ({
         </div>
 
         <DrawerFooter>
-          {/* Watch / Unwatch */}
-          {isRunning && (
-            <Button
-              onClick={handleWatch}
-              className="w-full gap-2"
-              style={{
-                ...pixelBtnBase,
-                background: isWatched ? "hsl(var(--muted))" : "hsl(var(--secondary))",
-                color: isWatched
-                  ? "hsl(var(--muted-foreground))"
-                  : "hsl(var(--secondary-foreground))",
-                border: "2px solid hsl(var(--border))",
-                padding: "10px 0",
-              }}
-            >
-              {isWatched ? (
-                <>
-                  <BellOff className="w-3 h-3" />
-                  UNWATCH DUCK 🔕
-                </>
-              ) : (
-                <>
-                  <Bell className="w-3 h-3" />
-                  WATCH DUCK 🔔
-                </>
-              )}
-            </Button>
-          )}
+
 
           <DrawerClose asChild>
             <Button

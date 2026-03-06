@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { Bell } from "lucide-react";
+import { Menu } from "lucide-react";
 
 interface TopBarProps {
   notifications: number;
@@ -17,41 +17,19 @@ const TopBar = ({ notifications }: TopBarProps) => {
     >
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <span className="text-xl" style={{ imageRendering: "pixelated" }}>🦆</span>
-        <h1
-          className="font-display text-primary-foreground tracking-tight leading-none text-sm sm:text-lg md:text-xl"
-        >
-          QuackWash
-        </h1>
+        <span className="text-3xl" style={{ imageRendering: "pixelated" }}>🦆</span>
+        <div className="flex flex-col">
+          <h1
+            className="font-display text-primary-foreground tracking-tight leading-none text-sm sm:text-lg md:text-xl"
+          >
+            I-House Dashboard
+          </h1>
+          <span className="text-[10px] sm:text-xs text-primary-foreground/80 mt-1" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+            Made with ❤️ by I-House students.
+          </span>
+        </div>
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-3">
-        {/* Notification bell */}
-        <button
-          className="relative p-1"
-          aria-label="Notifications"
-          style={{
-            border: "2px solid hsl(var(--primary-foreground) / 0.5)",
-            boxShadow: "2px 2px 0px hsl(var(--px-shadow, 210 28% 35%) / 0.8)",
-          }}
-        >
-          <Bell className="w-4 h-4 text-primary-foreground" />
-          {notifications > 0 && (
-            <Badge
-              className="absolute -top-2 -right-2 h-4 min-w-4 px-1 text-[9px] border-0 flex items-center justify-center"
-              style={{
-                background: "hsl(var(--accent))",
-                color: "hsl(var(--accent-foreground))",
-                borderRadius: "0px",
-                fontFamily: '"Press Start 2P", monospace',
-              }}
-            >
-              {notifications}
-            </Badge>
-          )}
-        </button>
-      </div>
     </header>
   );
 };

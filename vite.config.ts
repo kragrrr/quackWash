@@ -16,6 +16,11 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/tangerpay/, "/api"),
       },
+      "/api/tfnsw": {
+        target: "https://api.transport.nsw.gov.au/v1/tp",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tfnsw/, ""),
+      },
     },
   },
   plugins: [react()].filter(Boolean),

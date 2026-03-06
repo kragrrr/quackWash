@@ -1,24 +1,21 @@
 import { useState, useEffect } from "react";
 import { Machine } from "@/data/mockData";
 import TopBar from "@/components/TopBar";
-import StatusStrip from "@/components/StatusStrip";
-import PondScene from "@/components/PondScene";
-import PixelDuck from "@/components/PixelDuck";
 import DuckDrawer from "@/components/DuckDrawer";
+import PondDrawer from "@/components/PondDrawer";
+import DashboardAccordion from "@/components/DashboardAccordion";
 import { useMachines } from "@/hooks/useMachines";
-import { useNotifications } from "@/hooks/useNotifications";
+
+import { useTransport } from "@/hooks/useTransport";
 
 const Index = () => {
-  const { data: machines = [], isLoading } = useMachines();
+  const { data: machines = [], isLoading: isLoadingMachines, refetch: refetchMachines } = useMachines();
+  const { data: shuttles = [], isLoading: isLoadingShuttles, refetch: refetchShuttles } = useTransport();
   const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [duckDrawerOpen, setDuckDrawerOpen] = useState(false);
+  const [pondDrawerOpen, setPondDrawerOpen] = useState(false);
 
-  const {
-    watchMachine,
-    unwatchMachine,
-    isWatched,
-    watchedCount,
-  } = useNotifications(machines);
+
 
   useEffect(() => {
     if (selectedMachine && machines.length > 0) {
@@ -29,13 +26,13 @@ const Index = () => {
 
   const handleDuckTap = (machine: Machine) => {
     setSelectedMachine(machine);
-    setDrawerOpen(true);
+    setDuckDrawerOpen(true);
   };
 
-  if (isLoading && machines.length === 0) {
+  if (isLoadingMachines && machines.length === 0) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <TopBar notifications={watchedCount} />
+        <TopBar notifications={0} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center space-y-4">
             <span className="text-5xl animate-duck-bob inline-block">🦆</span>
@@ -56,46 +53,42 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <TopBar notifications={watchedCount} />
-      <StatusStrip machines={machines} />
+    <div className="min-h-screen bg-[url('/bg-clouds.png')] bg-cover bg-fixed bg-center flex flex-col pt-1" style={{ backgroundColor: "#e0f2fe" }}>
+      <TopBar notifications={0} />
 
-      <main className="flex-1 px-2 sm:px-4 pb-4 flex flex-col gap-2 sm:gap-4">
-        {/* Legend */}
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-6 pt-1">
-          <div className="flex items-center gap-1.5">
-            <PixelDuck className="text-xl sm:text-2xl" style={{ filter: "hue-rotate(170deg) saturate(2.8) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
-            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(210 45% 36%)" }}>= Washer</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <PixelDuck className="text-xl sm:text-2xl" style={{ filter: "hue-rotate(330deg) saturate(3) brightness(1.1) drop-shadow(0 2px 0 rgba(0,0,0,0.25))" }} />
-            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(28 45% 38%)" }}>= Dryer</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-sm sm:text-base md:text-lg" style={{ fontFamily: "VT323, monospace", color: "hsl(var(--muted-foreground))" }}>idle = floating • in-use = swimming</span>
-          </div>
-        </div>
-
-        {/* Pond */}
-        <div className="flex justify-center items-start flex-1 w-full pb-2">
-          <div className="w-full max-w-md sm:max-w-lg px-2 sm:px-4">
-            <PondScene
-              machines={machines}
-              onDuckClick={handleDuckTap}
-              isWatched={isWatched}
-            />
-          </div>
-        </div>
+      <main className="flex-1 pb-20 overflow-y-auto w-full max-w-lg mx-auto hide-scrollbar">
+        <DashboardAccordion
+          machines={machines}
+          onShowMachineDetails={() => setPondDrawerOpen(true)}
+        />
       </main>
 
-      {/* Duck Drawer */}
+      {/* Bottom Bar */}
+      <div className="fixed bottom-0 w-full max-w-lg mx-auto sm:left-1/2 sm:-translate-x-1/2 p-4 pb-6 flex items-center justify-center text-center"
+        style={{
+          background: "linear-gradient(to right, #1a2f3e, #2b3a4a)",
+          borderTopLeftRadius: "24px",
+          borderTopRightRadius: "24px",
+          boxShadow: "0 -4px 10px rgba(0,0,0,0.2)"
+        }}>
+        <p className="text-xs text-white/50" style={{ fontFamily: '"Press Start 2P", monospace', fontSize: '0.55rem', lineHeight: '1.5' }}>
+          This page is not affiliated with UOW or I-House.
+        </p>
+      </div>
+
+      {/* Drawer for individual machine options (watch/unwatch) */}
       <DuckDrawer
         machine={selectedMachine}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        isWatched={selectedMachine ? isWatched(selectedMachine.id) : false}
-        onWatch={watchMachine}
-        onUnwatch={unwatchMachine}
+        open={duckDrawerOpen}
+        onOpenChange={setDuckDrawerOpen}
+      />
+
+      {/* Drawer showing the full Pond Scene */}
+      <PondDrawer
+        machines={machines}
+        open={pondDrawerOpen}
+        onOpenChange={setPondDrawerOpen}
+        onDuckClick={handleDuckTap}
       />
     </div>
   );
