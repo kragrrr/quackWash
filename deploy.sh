@@ -12,7 +12,8 @@ source $HOME/nodevenv/quackWash-repo/20/bin/activate
 cd $HOME/quackWash-repo
 
 # Pull latest code
-echo "→ Pulling latest from GitHub..."
+echo "→ Resetting workspace and pulling latest from GitHub..."
+git reset --hard
 git pull origin main
 
 # Install dependencies
