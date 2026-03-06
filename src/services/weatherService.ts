@@ -2,6 +2,11 @@ export interface WeatherData {
     temperature: number;
     condition: string;
     isRaining: boolean;
+    isDay: boolean;
+    isCloudy: boolean;
+    isPartlyCloudy: boolean;
+    isSnowing: boolean;
+    isThunder: boolean;
     forecastSummary: string;
 }
 
@@ -42,6 +47,12 @@ export const fetchWeather = async (): Promise<WeatherData> => {
 
         const isLiteralRainCode = rainCodes.includes(conditionCode);
         const isRaining = isLiteralRainCode || current.precip_mm > 0.5;
+        const isDay = current.is_day === 1;
+        
+        const isCloudy = [1006, 1009, 1030, 1135, 1148].includes(conditionCode);
+        const isPartlyCloudy = conditionCode === 1003;
+        const isSnowing = [1066, 1069, 1072, 1114, 1117, 1168, 1171, 1204, 1207, 1210, 1213, 1216, 1219, 1222, 1225, 1237, 1249, 1252, 1255, 1258, 1261, 1264, 1279, 1282].includes(conditionCode);
+        const isThunder = [1087, 1273, 1276, 1279, 1282].includes(conditionCode);
 
         const maxTemp = Math.round(data.forecast.forecastday[0].day.maxtemp_c);
         const minTemp = Math.round(data.forecast.forecastday[0].day.mintemp_c);
@@ -51,6 +62,11 @@ export const fetchWeather = async (): Promise<WeatherData> => {
             temperature: temp,
             condition: conditionText,
             isRaining,
+            isDay,
+            isCloudy,
+            isPartlyCloudy,
+            isSnowing,
+            isThunder,
             forecastSummary,
         };
     } catch (error) {
@@ -59,6 +75,11 @@ export const fetchWeather = async (): Promise<WeatherData> => {
             temperature: 0,
             condition: "Unknown",
             isRaining: false,
+            isDay: true,
+            isCloudy: false,
+            isPartlyCloudy: false,
+            isSnowing: false,
+            isThunder: false,
             forecastSummary: "Unable to load forecast",
         };
     }

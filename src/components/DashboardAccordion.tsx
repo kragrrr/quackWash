@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Machine } from "@/data/mockData";
 import { useWeather } from "@/hooks/useWeather";
 import { useTransport } from "@/hooks/useTransport";
-import { ChevronDown, ChevronUp, Droplets, Sun, CloudRain, BusFront } from "lucide-react";
+import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon } from "lucide-react";
 
 interface DashboardAccordionProps {
     machines: Machine[];
@@ -43,6 +43,31 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
     const freeWashers = machines.filter(m => m.type === "Washer" && m.status === "Idle").length;
     const freeDryers = machines.filter(m => m.type === "Dryer" && m.status === "Idle").length;
     const finishingSoon = machines.filter(m => m.status === "Running" && m.cycleMinutesRemaining && m.cycleMinutesRemaining <= 10).length;
+
+    let WeatherIcon = Sun;
+    let weatherEmoji = '☀️';
+
+    if (weather) {
+        if (weather.isThunder) {
+            WeatherIcon = CloudLightning;
+            weatherEmoji = '⛈️';
+        } else if (weather.isSnowing) {
+            WeatherIcon = Snowflake;
+            weatherEmoji = '❄️';
+        } else if (weather.isRaining) {
+            WeatherIcon = CloudRain;
+            weatherEmoji = '🌧️';
+        } else if (weather.isCloudy) {
+            WeatherIcon = Cloud;
+            weatherEmoji = '☁️';
+        } else if (weather.isPartlyCloudy) {
+            WeatherIcon = weather.isDay ? CloudSun : CloudMoon;
+            weatherEmoji = weather.isDay ? '⛅️' : '☁️';
+        } else {
+            WeatherIcon = weather.isDay ? Sun : Moon;
+            weatherEmoji = weather.isDay ? '☀️' : '🌙';
+        }
+    }
 
     return (
         <div className="w-full max-w-md mx-auto flex flex-col gap-2 mt-4 px-2">
@@ -111,13 +136,13 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
             </PixelCard>
 
             {/* 3. Weather */}
-            <PixelCard title="Weather" icon={weather?.isRaining ? CloudRain : Sun} defaultOpen={true}>
+            <PixelCard title="Weather" icon={WeatherIcon} defaultOpen={true}>
                 {loadingWeather ? (
                     <div className="text-sm text-muted-foreground animate-pulse">Loading weather...</div>
                 ) : weather ? (
                     <div className="flex flex-col gap-3 font-body">
                         <div className="flex items-center gap-2">
-                            <span className="text-xl">{weather.isRaining ? '🌧️' : '☀️'}</span>
+                            <span className="text-xl">{weatherEmoji}</span>
                             <span className="font-bold">{weather.temperature}°C and {weather.condition.toLowerCase()}</span>
                         </div>
                         <div className="flex items-center gap-2">
