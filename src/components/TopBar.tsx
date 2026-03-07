@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Menu } from "lucide-react";
+import PixelDuck from "./PixelDuck";
 
 interface TopBarProps {
   notifications: number;
@@ -17,7 +18,7 @@ const TopBar = ({ notifications }: TopBarProps) => {
     >
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <span className="text-3xl" style={{ imageRendering: "pixelated" }}>🦆</span>
+        <PixelDuck className="w-8 h-8 sm:w-10 sm:h-10 text-[2rem]" />
         <div className="flex flex-col">
           <h1
             className="font-display text-primary-foreground tracking-tight leading-none text-sm sm:text-lg md:text-xl"
