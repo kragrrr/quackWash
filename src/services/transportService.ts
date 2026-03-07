@@ -5,7 +5,7 @@ export interface ShuttleDeparture {
     countdownMinutes: number;
 }
 
-export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<ShuttleDeparture[]> => {
+export const fetchShuttleTimes = async (stopIdOrIds: string | string[] = "250010"): Promise<ShuttleDeparture[]> => {
     const apiKey = import.meta.env.VITE_TFNSW_API_KEY;
 
     if (!apiKey) {
@@ -13,6 +13,35 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
         return getMockShuttleData();
     }
 
+    if (Array.isArray(stopIdOrIds)) {
+        try {
+            const allDeparturesPromises = stopIdOrIds.map(id => fetchSingleStop(id, apiKey));
+            const allDeparturesNested = await Promise.all(allDeparturesPromises);
+            
+            // Flatten, sort by countdown, and return top 5
+            return allDeparturesNested
+                .flat()
+                // Deduplicate by ID just in case (though different stops should have different UIDs, sometimes transport API returns duplicates across stops)
+                .reduce((acc: ShuttleDeparture[], current) => {
+                    const x = acc.find(item => item.id === current.id);
+                    if (!x) {
+                        return acc.concat([current]);
+                    } else {
+                        return acc;
+                    }
+                }, [])
+                .sort((a, b) => a.countdownMinutes - b.countdownMinutes)
+                .slice(0, 5);
+        } catch (error) {
+            console.error("Failed to fetch multiple shuttle data:", error);
+            return [];
+        }
+    } else {
+        return fetchSingleStop(stopIdOrIds, apiKey);
+    }
+};
+
+const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleDeparture[]> => {
     try {
         // stopId is passed as an argument. 
         // 250010 = North Wollongong Station (To UOW)
@@ -27,18 +56,18 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
                 'Authorization': `apikey ${apiKey}`,
                 'Accept': 'application/json'
             }
-        }
-        );
+        });
 
         if (!response.ok) {
-            throw new Error(`Transport API error: ${response.statusText}`);
+            console.warn(`Transport API returned ${response.status}: ${response.statusText}. Assuming no shuttles.`);
+            return [];
         }
 
         const data = await response.json();
         const stopEvents = data.stopEvents || [];
 
-        // Filter for routes 9 and 9N
-        const validRoutes = ["9", "9N"];
+        // Filter for routes 9, 9N, 55A, 55C
+        const validRoutes = ["9", "9N", "55A", "55C"];
 
         // Parse the results
         const departures: ShuttleDeparture[] = stopEvents
@@ -49,14 +78,19 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
                 const diffMs = departureTime.getTime() - now.getTime();
                 const countdownMinutes = Math.max(0, Math.floor(diffMs / 60000));
 
+                // Generate a reliable unique ID based on the trip or schedule
+                const tripId = event.properties?.RealtimeTripId || event.properties?.AVMSTripID || `${event.transportation.number}_${event.departureTimePlanned}`;
+
                 return {
-                    id: event.transportation.uid || Math.random().toString(36).substring(7),
+                    id: tripId,
                     route: event.transportation.number,
                     destination: event.transportation.destination.name,
                     countdownMinutes,
                 };
             })
-            .sort((a, b) => a.countdownMinutes - b.countdownMinutes)
+            // Filter out shuttles that have already departed (can happen in API sometimes)
+            .filter((dep: ShuttleDeparture) => dep.countdownMinutes >= 0)
+            .sort((a: ShuttleDeparture, b: ShuttleDeparture) => a.countdownMinutes - b.countdownMinutes)
             .slice(0, 5); // Return up to 5 next shuttles
 
         if (departures.length === 0) {
@@ -66,7 +100,14 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
         return departures;
 
     } catch (error) {
-        console.error("Failed to fetch shuttle data, falling back to mock:", error);
+        console.error("Failed to fetch shuttle data:", error);
+        
+        // If we have an API key, assume this is a transient error or no shuttles currently running (e.g. night time)
+        // We only want the mock data to show up if the app isn't configured with an API key at all.
+        if (apiKey) {
+            return [];
+        }
+        
         return getMockShuttleData();
     }
 };
