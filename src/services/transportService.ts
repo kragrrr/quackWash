@@ -69,9 +69,26 @@ const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleD
         // Filter for routes 9, 9N, 55A, 55C
         const validRoutes = ["9", "9N", "55A", "55C"];
 
+        const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
+
+        // Stop IDs corresponding to directions
+        const toUowStops = ["250010", "2500122"];
+        const fromUowStops = ["250019", "2500354"];
+
         // Parse the results
         const departures: ShuttleDeparture[] = stopEvents
-            .filter((event: any) => validRoutes.includes(event.transportation.number))
+            .filter((event: any) => {
+                const routeNumber = event.transportation.number;
+                if (!validRoutes.includes(routeNumber)) return false;
+                
+                // For weekend shuttles, only show 55C to UOW, and 55A from UOW
+                if (isWeekend) {
+                    if (toUowStops.includes(stopId) && routeNumber === "55A") return false;
+                    if (fromUowStops.includes(stopId) && routeNumber === "55C") return false;
+                }
+                
+                return true;
+            })
             .map((event: any) => {
                 const departureTime = new Date(event.departureTimeEstimated || event.departureTimePlanned);
                 const now = new Date();
