@@ -60,7 +60,7 @@ export const fetchShuttleTimes = async (stopId: string = "250010"): Promise<Shut
             .slice(0, 5); // Return up to 5 next shuttles
 
         if (departures.length === 0) {
-            return getMockShuttleData(); // Fallback to mock data if empty (e.g., late at night when none are running)
+            return []; // Return empty array instead of mock data when no shuttles are running
         }
 
         return departures;
