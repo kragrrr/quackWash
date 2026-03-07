@@ -53,7 +53,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[url('/bg-clouds.png')] bg-cover bg-fixed bg-center flex flex-col" style={{ backgroundColor: "#e0f2fe" }}>
+    <div className="min-h-screen bg-background flex flex-col">
       <TopBar notifications={0} />
 
       <main className="flex-1 pb-20 overflow-y-auto w-full max-w-lg mx-auto hide-scrollbar">
