@@ -5,7 +5,7 @@ export interface ShuttleDeparture {
     countdownMinutes: number;
 }
 
-export const fetchShuttleTimes = async (stopIdOrIds: string | string[] = "250010"): Promise<ShuttleDeparture[]> => {
+export const fetchShuttleTimes = async (stopIdOrIds: string | string[] = "2500122"): Promise<ShuttleDeparture[]> => {
     const apiKey = import.meta.env.VITE_TFNSW_API_KEY;
 
     if (!apiKey) {
@@ -43,12 +43,13 @@ export const fetchShuttleTimes = async (stopIdOrIds: string | string[] = "250010
 
 const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleDeparture[]> => {
     try {
-        // stopId is passed as an argument. 
-        // 250010 = North Wollongong Station (To UOW)
-        // 250019 = UOW Northfields Ave Stand A (From UOW)
-        // Using the real-time departure API. Note: Due to CORS, direct browser fetch to TfNSW may fail unless proxied.
-        // If it fails, we will fall back to mock data.
-        // We always use the proxy (local Vite dev server or app.js prod server) to prevent CORS
+        // Stop assignments:
+        //   To UOW (North Wollongong):
+        //     2500122 = NW Station, Porter St — serves 9, 9N; 55C passes through on weekends
+        //   From UOW:
+        //     250019  = UOW Northfields Ave, Stand A — serves 9, 9N
+        //     2500354 = UOW Northfields Ave, Stand D — serves 55A (loop via Gwynneville)
+        //     2500355 = UOW Northfields Ave, Stand C — serves 55C (loop via Fairy Meadow)
         const apiUrl = `/api/tfnsw/departure_mon?outputFormat=rapidJSON&coordOutputFormat=EPSG%3A4326&mode=direct&type_dm=stop&name_dm=${stopId}&departureMonitorMacro=true&TfNSWTR=true&version=10.2.1.42`;
 
         const response = await fetch(apiUrl, {
@@ -66,36 +67,35 @@ const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleD
         const data = await response.json();
         const stopEvents = data.stopEvents || [];
 
-        // Filter for routes 9, 9N, 55A, 55C
-        const validRoutes = ["9", "9N", "55A", "55C"];
+        const now = new Date();
+        const todayDateStr = now.toDateString();
+        const isWeekend = now.getDay() === 0 || now.getDay() === 6;
 
-        const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
+        // 55A and 55C (Gong Shuttle) only run on weekends for our purposes
+        const validRoutes = isWeekend ? ["9", "9N", "55A", "55C"] : ["9", "9N"];
 
-        // Stop IDs corresponding to directions
-        const toUowStops = ["250010", "2500122"];
-        const fromUowStops = ["250019", "2500354"];
+        // 55A passes through NW Station heading AWAY from UOW — exclude it from "To UOW"
+        const toUowStops = ["2500122"];
 
-        // Parse the results
         const departures: ShuttleDeparture[] = stopEvents
             .filter((event: any) => {
                 const routeNumber = event.transportation.number;
                 if (!validRoutes.includes(routeNumber)) return false;
-                
-                // For weekend shuttles, only show 55C to UOW, and 55A from UOW
-                if (isWeekend) {
-                    if (toUowStops.includes(stopId) && routeNumber === "55A") return false;
-                    if (fromUowStops.includes(stopId) && routeNumber === "55C") return false;
-                }
-                
+
+                // 55A at NW Station is heading away from UOW (anticlockwise loop), not useful for "To UOW"
+                if (isWeekend && toUowStops.includes(stopId) && routeNumber === "55A") return false;
+
+                // Skip departures that are on a different calendar day (next-day timetable entries)
+                const departureTime = new Date(event.departureTimeEstimated || event.departureTimePlanned);
+                if (departureTime.toDateString() !== todayDateStr) return false;
+
                 return true;
             })
             .map((event: any) => {
                 const departureTime = new Date(event.departureTimeEstimated || event.departureTimePlanned);
-                const now = new Date();
                 const diffMs = departureTime.getTime() - now.getTime();
                 const countdownMinutes = Math.max(0, Math.floor(diffMs / 60000));
 
-                // Generate a reliable unique ID based on the trip or schedule
                 const tripId = event.properties?.RealtimeTripId || event.properties?.AVMSTripID || `${event.transportation.number}_${event.departureTimePlanned}`;
 
                 return {
@@ -105,26 +105,19 @@ const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleD
                     countdownMinutes,
                 };
             })
-            // Filter out shuttles that have already departed (can happen in API sometimes)
             .filter((dep: ShuttleDeparture) => dep.countdownMinutes >= 0)
             .sort((a: ShuttleDeparture, b: ShuttleDeparture) => a.countdownMinutes - b.countdownMinutes)
-            .slice(0, 5); // Return up to 5 next shuttles
-
-        if (departures.length === 0) {
-            return []; // Return empty array instead of mock data when no shuttles are running
-        }
+            .slice(0, 5);
 
         return departures;
 
     } catch (error) {
         console.error("Failed to fetch shuttle data:", error);
-        
-        // If we have an API key, assume this is a transient error or no shuttles currently running (e.g. night time)
-        // We only want the mock data to show up if the app isn't configured with an API key at all.
+
         if (apiKey) {
             return [];
         }
-        
+
         return getMockShuttleData();
     }
 };

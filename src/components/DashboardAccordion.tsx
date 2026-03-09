@@ -36,8 +36,8 @@ const PixelCard = ({ title, icon: Icon, children, defaultOpen = false }: any) =>
 
 export default function DashboardAccordion({ machines, onShowMachineDetails }: DashboardAccordionProps) {
     const { data: weather, isLoading: loadingWeather } = useWeather();
-    const { data: shuttlesToUOW = [], isLoading: loadingShuttlesTo } = useTransport(["250010", "2500122"]);
-    const { data: shuttlesFromUOW = [], isLoading: loadingShuttlesFrom } = useTransport(["250019", "2500354"]);
+    const { data: shuttlesToUOW = [], isLoading: loadingShuttlesTo } = useTransport(["2500122"]);
+    const { data: shuttlesFromUOW = [], isLoading: loadingShuttlesFrom } = useTransport(["250019", "2500354", "2500355"]);
 
     // Compute Laundry Stats
     const freeWashers = machines.filter(m => m.type === "Washer" && m.status === "Idle").length;
