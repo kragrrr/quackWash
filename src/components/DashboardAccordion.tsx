@@ -35,7 +35,7 @@ const PixelCard = ({ title, icon: Icon, children, defaultOpen = false }: any) =>
 };
 
 export default function DashboardAccordion({ machines, onShowMachineDetails }: DashboardAccordionProps) {
-    const { data: weather, isLoading: loadingWeather, isError: weatherError, error: weatherErrorObj } = useWeather();
+    const { data: weather, isLoading: loadingWeather } = useWeather();
     const { data: shuttlesToUOW = [], isLoading: loadingShuttlesTo } = useTransport(["2500122"]);
     const { data: shuttlesFromUOW = [], isLoading: loadingShuttlesFrom } = useTransport(["250019", "2500354", "2500355"]);
 
@@ -137,7 +137,7 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
 
             {/* 3. Weather */}
             <PixelCard title="Weather" icon={WeatherIcon} defaultOpen={true}>
-                {loadingWeather && !weather ? (
+                {loadingWeather ? (
                     <div className="text-sm text-muted-foreground animate-pulse">Loading weather...</div>
                 ) : weather ? (
                     <div className="flex flex-col gap-3 font-body">
@@ -149,17 +149,9 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
                             <span className="text-xl">☁️</span>
                             <span className="text-muted-foreground text-sm">{weather.forecastSummary}</span>
                         </div>
-                        {weatherError && (
-                            <div className="text-xs text-yellow-600">Showing stale data – refresh failed</div>
-                        )}
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-2 font-body">
-                        <div className="text-sm text-destructive">Unable to load weather</div>
-                        {weatherErrorObj && (
-                            <div className="text-xs text-muted-foreground">{weatherErrorObj.message}</div>
-                        )}
-                    </div>
+                    <div className="text-sm text-muted-foreground">Unable to load weather</div>
                 )}
             </PixelCard>
 
