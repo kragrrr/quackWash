@@ -1,12 +1,14 @@
-import { Badge } from "@/components/ui/badge";
-import { Menu } from "lucide-react";
+import { Eye } from "lucide-react";
 import PixelDuck from "./PixelDuck";
+import { useVisitors } from "@/hooks/useVisitors";
 
 interface TopBarProps {
   notifications: number;
 }
 
 const TopBar = ({ notifications }: TopBarProps) => {
+  const { data: visitorCount } = useVisitors();
+
   return (
     <header
       className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between"
@@ -31,6 +33,21 @@ const TopBar = ({ notifications }: TopBarProps) => {
         </div>
       </div>
 
+      {/* Visitor counter */}
+      {visitorCount != null && (
+        <div
+          className="flex items-center gap-1.5 text-primary-foreground/90"
+          title="Unique visitors today"
+        >
+          <Eye className="w-4 h-4" />
+          <span
+            className="text-[10px] sm:text-xs"
+            style={{ fontFamily: '"Press Start 2P", monospace' }}
+          >
+            {visitorCount}
+          </span>
+        </div>
+      )}
     </header>
   );
 };

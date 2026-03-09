@@ -21,6 +21,10 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/tfnsw/, ""),
       },
+      "/api/visitors": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react()].filter(Boolean),

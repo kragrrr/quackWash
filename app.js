@@ -7,6 +7,34 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, "dist");
+const VISITORS_FILE = path.join(__dirname, "visitors.json");
+
+function todayKey() {
+    return new Date().toISOString().slice(0, 10);
+}
+
+function loadVisitors() {
+    try {
+        return JSON.parse(fs.readFileSync(VISITORS_FILE, "utf-8"));
+    } catch {
+        return {};
+    }
+}
+
+function saveVisitors(data) {
+    fs.writeFileSync(VISITORS_FILE, JSON.stringify(data));
+}
+
+function recordVisit(ip) {
+    const data = loadVisitors();
+    const day = todayKey();
+    if (!data[day]) data[day] = [];
+    if (!data[day].includes(ip)) {
+        data[day].push(ip);
+        saveVisitors(data);
+    }
+    return data[day].length;
+}
 
 const MIME_TYPES = {
     ".html": "text/html",
@@ -76,6 +104,20 @@ function proxyTfnsw(req, res, apiPath) {
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
     const pathname = decodeURIComponent(parsedUrl.pathname);
+
+    // Visitor counter
+    if (pathname === "/api/visitors") {
+        const ip =
+            (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+            req.socket.remoteAddress ||
+            "unknown";
+        const count = recordVisit(ip);
+        res.writeHead(200, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        return res.end(JSON.stringify({ count }));
+    }
 
     // Handle API proxy
     if (pathname.startsWith("/api/tangerpay")) {
