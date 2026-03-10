@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 visitors.json
+machine-history.json
 
 # Editor directories and files
 .vscode/*
