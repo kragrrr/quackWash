@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Machine } from "@/data/mockData";
 import { useWeather } from "@/hooks/useWeather";
 import { useTransport } from "@/hooks/useTransport";
-import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon } from "lucide-react";
+import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon, Hand } from "lucide-react";
 
 interface DashboardAccordionProps {
     machines: Machine[];
@@ -35,6 +35,13 @@ const PixelCard = ({ title, icon: Icon, children, defaultOpen = false }: any) =>
 };
 
 export default function DashboardAccordion({ machines, onShowMachineDetails }: DashboardAccordionProps) {
+    const [showHint, setShowHint] = useState(true);
+
+    const handleLaundryClick = useCallback(() => {
+        setShowHint(false);
+        onShowMachineDetails();
+    }, [onShowMachineDetails]);
+
     const { data: weather, isLoading: loadingWeather } = useWeather();
     const { data: shuttlesToUOW = [], isLoading: loadingShuttlesTo } = useTransport(["2500122"]);
     const { data: shuttlesFromUOW = [], isLoading: loadingShuttlesFrom } = useTransport(["250019", "2500354", "2500355"]);
@@ -74,7 +81,7 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
 
             {/* 1. Laundry Room */}
             <PixelCard title="Laundry Room" icon={Droplets} defaultOpen={true}>
-                <div className="flex flex-col gap-3 font-body cursor-pointer hover:bg-black/5 p-2 rounded transition-colors" onClick={onShowMachineDetails}>
+                <div className="flex flex-col gap-3 font-body cursor-pointer hover:bg-black/5 p-2 rounded transition-colors relative" onClick={handleLaundryClick}>
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-500 pixel-border border-[1px]" />
                         <span>{freeWashers} washers free</span>
@@ -87,6 +94,16 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
                         <div className="w-3 h-3 rounded-full bg-green-500 pixel-border border-[1px]" />
                         <span>{freeDryers} dryers free</span>
                     </div>
+
+                    {showHint && (
+                        <div
+                            className="flex items-center justify-center gap-1.5 mt-1 py-1.5 rounded-md bg-foreground/10 animate-pulse"
+                            style={{ fontFamily: '"VT323", monospace' }}
+                        >
+                            <Hand className="w-4 h-4 text-foreground/70 animate-bounce" style={{ animationDuration: "1.4s" }} />
+                            <span className="text-sm text-foreground/70 tracking-wide">Tap to see the pond</span>
+                        </div>
+                    )}
 
                     <div className="text-right mt-1 text-xs text-muted-foreground" style={{ fontFamily: '"VT323", monospace' }}>
                         Updated just now <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse ml-1" />
