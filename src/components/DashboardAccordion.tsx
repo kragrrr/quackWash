@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { Machine } from "@/data/mockData";
 import { useWeather } from "@/hooks/useWeather";
 import { useTransport } from "@/hooks/useTransport";
-import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon, Hand } from "lucide-react";
+import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon, Hand, Clock, Timer } from "lucide-react";
 
 interface DashboardAccordionProps {
     machines: Machine[];
@@ -34,8 +34,14 @@ const PixelCard = ({ title, icon: Icon, children, defaultOpen = false }: any) =>
     );
 };
 
+const formatDepartureTime = (date: Date): string => {
+    const d = new Date(date);
+    return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
+};
+
 export default function DashboardAccordion({ machines, onShowMachineDetails }: DashboardAccordionProps) {
     const [showHint, setShowHint] = useState(true);
+    const [showActualTime, setShowActualTime] = useState(false);
 
     const handleLaundryClick = useCallback(() => {
         setShowHint(false);
@@ -113,6 +119,18 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
 
             {/* 2. Shuttles */}
             <PixelCard title="UOW Shuttles" icon={BusFront} defaultOpen={true}>
+                <div className="flex items-center justify-end mb-2 gap-1.5">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+                        {showActualTime ? "Departure" : "Time left"}
+                    </span>
+                    <button
+                        onClick={() => setShowActualTime(!showActualTime)}
+                        className="flex items-center gap-1 px-2 py-1 rounded pixel-border border-[1px] text-xs font-bold bg-primary/10 hover:bg-primary/20 transition-colors"
+                        title={showActualTime ? "Show time remaining" : "Show departure time"}
+                    >
+                        {showActualTime ? <Timer className="w-3.5 h-3.5" /> : <Clock className="w-3.5 h-3.5" />}
+                    </button>
+                </div>
                 <div className="grid grid-cols-2 gap-4 font-body">
                     {/* To UOW */}
                     <div className="flex flex-col gap-3">
@@ -123,7 +141,11 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
                             shuttlesToUOW.map((shuttle) => (
                                 <div key={shuttle.id} className="flex items-center gap-1.5">
                                     <span className="text-sm">🚍</span>
-                                    <span className="font-bold text-sm">{shuttle.countdownMinutes} m</span>
+                                    <span className="font-bold text-sm">
+                                        {showActualTime
+                                            ? formatDepartureTime(shuttle.departureTime)
+                                            : `${shuttle.countdownMinutes} m`}
+                                    </span>
                                     <span className="text-xs text-muted-foreground ml-auto">({shuttle.route})</span>
                                 </div>
                             ))
@@ -141,7 +163,11 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
                             shuttlesFromUOW.map((shuttle) => (
                                 <div key={shuttle.id} className="flex items-center gap-1.5">
                                     <span className="text-sm">🚍</span>
-                                    <span className="font-bold text-sm">{shuttle.countdownMinutes} m</span>
+                                    <span className="font-bold text-sm">
+                                        {showActualTime
+                                            ? formatDepartureTime(shuttle.departureTime)
+                                            : `${shuttle.countdownMinutes} m`}
+                                    </span>
                                     <span className="text-xs text-muted-foreground ml-auto">({shuttle.route})</span>
                                 </div>
                             ))

@@ -3,6 +3,7 @@ export interface ShuttleDeparture {
     route: string;
     destination: string;
     countdownMinutes: number;
+    departureTime: Date;
 }
 
 export const fetchShuttleTimes = async (stopIdOrIds: string | string[] = "2500122"): Promise<ShuttleDeparture[]> => {
@@ -103,6 +104,7 @@ const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleD
                     route: event.transportation.number,
                     destination: event.transportation.destination.name,
                     countdownMinutes,
+                    departureTime,
                 };
             })
             .filter((dep: ShuttleDeparture) => dep.countdownMinutes >= 0)
@@ -124,9 +126,10 @@ const fetchSingleStop = async (stopId: string, apiKey: string): Promise<ShuttleD
 
 const getMockShuttleData = (): ShuttleDeparture[] => {
     // Mock data mimicking the requested screenshot layout: 3, 20, 30 min
+    const now = new Date();
     return [
-        { id: "mock_1", route: "9", destination: "UOW", countdownMinutes: 3 },
-        { id: "mock_2", route: "9", destination: "UOW", countdownMinutes: 20 },
-        { id: "mock_3", route: "9N", destination: "UOW", countdownMinutes: 30 },
+        { id: "mock_1", route: "9", destination: "UOW", countdownMinutes: 3, departureTime: new Date(now.getTime() + 3 * 60000) },
+        { id: "mock_2", route: "9", destination: "UOW", countdownMinutes: 20, departureTime: new Date(now.getTime() + 20 * 60000) },
+        { id: "mock_3", route: "9N", destination: "UOW", countdownMinutes: 30, departureTime: new Date(now.getTime() + 30 * 60000) },
     ];
 };
