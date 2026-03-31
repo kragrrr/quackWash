@@ -82,3 +82,52 @@ Tangerpay API ──► Vite Proxy (/api/tangerpay) ──► useMachines() hook
 | `npm run build` | Production build |
 | `npm run test` | Run vitest suite |
 | `npm run preview` | Preview production build |
+
+## `/dev` Dinner Menu Admin
+
+This project includes a password-gated `/dev` route for catering menu management.
+
+- `/dev` requires a **viewer password** before loading the page
+- The "Catering Admin" editor in that page requires a separate **admin password**
+- Admin can upload dinner menu as:
+  - text
+  - image
+  - PDF
+
+### Required Environment Variables
+
+Set these on your deployment environment:
+
+- `DEV_VIEWER_PASSWORD`
+- `DEV_ADMIN_PASSWORD`
+
+If not set, local defaults are used in `app.js` (`replacejumpr` / `replacejumpr`). You should still set explicit environment variables in production.
+
+### Set Passwords On Server
+
+For Node process startup, export variables before launching:
+
+```sh
+export DEV_VIEWER_PASSWORD="replacejumpr"
+export DEV_ADMIN_PASSWORD="replacejumpr"
+node app.js
+```
+
+For PM2:
+
+```sh
+DEV_VIEWER_PASSWORD="replacejumpr" DEV_ADMIN_PASSWORD="replacejumpr" pm2 restart quackwash --update-env
+```
+
+### Data Persistence
+
+- Dinner metadata is stored in `dinner-menu.json` at the project root.
+- Uploaded menu files are stored in `/uploads` and served via `/uploads/<filename>`.
+
+### Daily Catering Workflow
+
+1. Open `/dev`
+2. Enter viewer password
+3. Open "What's for Dinner?" > "Catering Admin"
+4. Enter admin password
+5. Choose mode (text/image/PDF), upload or paste content, and save
