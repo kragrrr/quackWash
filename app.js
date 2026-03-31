@@ -9,6 +9,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, "dist");
 const VISITORS_FILE = path.join(__dirname, "visitors.json");
 const MACHINE_HISTORY_FILE = path.join(__dirname, "machine-history.json");
+const DINNER_MENU_FILE = path.join(__dirname, "dinner-menu.json");
+const UPLOADS_DIR = path.join(__dirname, "uploads");
+const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024;
 const TANGERPAY_CACHE_TTL_MS = 30_000;
 const MACHINE_HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
 const MACHINE_HISTORY_MAX_ENTRIES = 10_000;
@@ -24,6 +27,8 @@ const HOP_BY_HOP_HEADERS = new Set([
 ]);
 const tangerpayCache = new Map();
 const tangerpayInflight = new Map();
+const DEV_VIEWER_PASSWORD = process.env.DEV_VIEWER_PASSWORD || "replacejumpr";
+const DEV_ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || "replacejumpr";
 
 function todayKey() {
     return new Date().toISOString().slice(0, 10);
@@ -46,6 +51,120 @@ function loadMachineHistory() {
         return JSON.parse(fs.readFileSync(MACHINE_HISTORY_FILE, "utf-8"));
     } catch {
         return [];
+    }
+}
+
+function ensureDinnerStorage() {
+    if (!fs.existsSync(UPLOADS_DIR)) {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+
+    if (!fs.existsSync(DINNER_MENU_FILE)) {
+        const defaultMenu = {
+            type: "text",
+            title: "What's for Dinner?",
+            dateLabel: new Date().toLocaleDateString(),
+            text: "No dinner menu uploaded yet.",
+            filePath: null,
+            mimeType: null,
+            updatedAt: new Date().toISOString(),
+        };
+        fs.writeFileSync(DINNER_MENU_FILE, JSON.stringify(defaultMenu));
+    }
+}
+
+function loadDinnerMenu() {
+    ensureDinnerStorage();
+    try {
+        return JSON.parse(fs.readFileSync(DINNER_MENU_FILE, "utf-8"));
+    } catch {
+        return {
+            type: "text",
+            title: "What's for Dinner?",
+            dateLabel: new Date().toLocaleDateString(),
+            text: "No dinner menu uploaded yet.",
+            filePath: null,
+            mimeType: null,
+            updatedAt: new Date().toISOString(),
+        };
+    }
+}
+
+function saveDinnerMenu(menu) {
+    ensureDinnerStorage();
+    fs.writeFileSync(DINNER_MENU_FILE, JSON.stringify(menu));
+}
+
+function readJsonBody(req) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        let totalSize = 0;
+
+        req.on("data", (chunk) => {
+            totalSize += chunk.length;
+            if (totalSize > MAX_UPLOAD_SIZE_BYTES) {
+                reject(new Error("Payload too large"));
+                req.destroy();
+                return;
+            }
+            chunks.push(chunk);
+        });
+
+        req.on("end", () => {
+            try {
+                const raw = Buffer.concat(chunks).toString("utf-8");
+                resolve(raw ? JSON.parse(raw) : {});
+            } catch {
+                reject(new Error("Invalid JSON payload"));
+            }
+        });
+
+        req.on("error", reject);
+    });
+}
+
+function getHeaderPassword(req, headerName) {
+    const value = req.headers[headerName];
+    return Array.isArray(value) ? value[0] : value;
+}
+
+function requirePassword(req, expected, headerName) {
+    const provided = getHeaderPassword(req, headerName);
+    return provided && provided === expected;
+}
+
+function safeUploadName(originalName, prefix) {
+    const safeBase = (originalName || "upload")
+        .replace(/[^a-zA-Z0-9._-]/g, "_")
+        .slice(-80);
+    return `${Date.now()}-${prefix}-${safeBase}`;
+}
+
+function writeUploadedBase64File(fileName, mimeType, fileBase64, kind) {
+    const isImage = kind === "image" && /^image\/(png|jpeg|jpg|webp|heic|heif)$/i.test(mimeType || "");
+    const isPdf = kind === "pdf" && /^application\/pdf$/i.test(mimeType || "");
+    if (!isImage && !isPdf) {
+        throw new Error("Unsupported file type");
+    }
+
+    const fileBuffer = Buffer.from(fileBase64 || "", "base64");
+    if (!fileBuffer.length || fileBuffer.length > MAX_UPLOAD_SIZE_BYTES) {
+        throw new Error("Invalid file payload");
+    }
+
+    const uploadName = safeUploadName(fileName, kind);
+    const fullPath = path.join(UPLOADS_DIR, uploadName);
+    fs.writeFileSync(fullPath, fileBuffer);
+    return `/uploads/${uploadName}`;
+}
+
+function cleanupOldUpload(filePathValue) {
+    if (!filePathValue || !filePathValue.startsWith("/uploads/")) {
+        return;
+    }
+    const absolutePath = path.join(UPLOADS_DIR, path.basename(filePathValue));
+    if (fs.existsSync(absolutePath)) {
+        fs.unlinkSync(absolutePath);
     }
 }
 
@@ -76,6 +195,8 @@ const MIME_TYPES = {
     ".svg": "image/svg+xml",
     ".ico": "image/x-icon",
     ".webp": "image/webp",
+    ".heic": "image/heic",
+    ".heif": "image/heif",
     ".woff": "font/woff",
     ".woff2": "font/woff2",
     ".ttf": "font/ttf",
@@ -284,6 +405,87 @@ const server = http.createServer((req, res) => {
         return res.end(JSON.stringify({ count }));
     }
 
+    if (pathname === "/api/dev/dinner-menu" && req.method === "GET") {
+        if (!requirePassword(req, DEV_VIEWER_PASSWORD, "x-dev-viewer-password")) {
+            res.writeHead(401, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ error: "Unauthorized" }));
+        }
+
+        const menu = loadDinnerMenu();
+        res.writeHead(200, {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        });
+        return res.end(JSON.stringify(menu));
+    }
+
+    if (pathname === "/api/dev/dinner-menu" && req.method === "POST") {
+        if (!requirePassword(req, DEV_ADMIN_PASSWORD, "x-dev-admin-password")) {
+            res.writeHead(401, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ error: "Unauthorized" }));
+        }
+
+        return readJsonBody(req)
+            .then((body) => {
+                const type = body?.type;
+                const title = String(body?.title || "What's for Dinner?");
+                const dateLabel = String(body?.dateLabel || new Date().toLocaleDateString());
+                const previous = loadDinnerMenu();
+
+                if (type === "text") {
+                    const text = String(body?.text || "").trim();
+                    if (!text) {
+                        res.writeHead(400, { "Content-Type": "application/json" });
+                        return res.end(JSON.stringify({ error: "Text menu cannot be empty" }));
+                    }
+
+                    cleanupOldUpload(previous.filePath);
+                    const menu = {
+                        type: "text",
+                        title,
+                        dateLabel,
+                        text,
+                        filePath: null,
+                        mimeType: null,
+                        updatedAt: new Date().toISOString(),
+                    };
+                    saveDinnerMenu(menu);
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify(menu));
+                }
+
+                if (type === "image" || type === "pdf") {
+                    const filePathValue = writeUploadedBase64File(
+                        body?.fileName,
+                        body?.mimeType,
+                        body?.fileBase64,
+                        type
+                    );
+                    cleanupOldUpload(previous.filePath);
+                    const menu = {
+                        type,
+                        title,
+                        dateLabel,
+                        text: null,
+                        filePath: filePathValue,
+                        mimeType: body?.mimeType || null,
+                        updatedAt: new Date().toISOString(),
+                    };
+                    saveDinnerMenu(menu);
+                    res.writeHead(200, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify(menu));
+                }
+
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Invalid menu type" }));
+            })
+            .catch((error) => {
+                const status = error.message === "Payload too large" ? 413 : 400;
+                res.writeHead(status, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: error.message }));
+            });
+    }
+
     // Handle API proxy
     if (pathname.startsWith("/api/tangerpay")) {
         // Extract the path including query parameters from req.url
@@ -295,6 +497,22 @@ const server = http.createServer((req, res) => {
         // Extract the path including query parameters from req.url
         const apiPath = req.url.replace(/^\/api\/tfnsw/, "");
         return proxyTfnsw(req, res, apiPath);
+    }
+
+    if (pathname.startsWith("/uploads/")) {
+        ensureDinnerStorage();
+        const uploadPath = path.join(UPLOADS_DIR, path.basename(pathname));
+        return fs.stat(uploadPath, (err, stats) => {
+            if (!err && stats.isFile()) {
+                const ext = path.extname(uploadPath).toLowerCase();
+                const contentType = MIME_TYPES[ext] || "application/octet-stream";
+                res.writeHead(200, { "Content-Type": contentType });
+                fs.createReadStream(uploadPath).pipe(res);
+                return;
+            }
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "File not found" }));
+        });
     }
 
     // Resolve the file path within dist/

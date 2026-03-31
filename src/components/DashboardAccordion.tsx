@@ -2,11 +2,16 @@ import { useState, useCallback } from "react";
 import { Machine } from "@/data/mockData";
 import { useWeather } from "@/hooks/useWeather";
 import { useTransport } from "@/hooks/useTransport";
-import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon, Hand, Clock, Timer } from "lucide-react";
+import { ChevronDown, ChevronUp, Droplets, Sun, Moon, CloudRain, Cloud, CloudLightning, Snowflake, BusFront, CloudSun, CloudMoon, Hand, Clock, Timer, UtensilsCrossed } from "lucide-react";
+import type { DinnerMenu } from "@/types/dinnerMenu";
 
 interface DashboardAccordionProps {
     machines: Machine[];
     onShowMachineDetails: () => void;
+    dinnerMenu?: DinnerMenu | null;
+    showDinnerSection?: boolean;
+    showDinnerAdminButton?: boolean;
+    onDinnerAdminClick?: () => void;
 }
 
 const PixelCard = ({ title, icon: Icon, children, defaultOpen = false }: any) => {
@@ -39,7 +44,14 @@ const formatDepartureTime = (date: Date): string => {
     return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true });
 };
 
-export default function DashboardAccordion({ machines, onShowMachineDetails }: DashboardAccordionProps) {
+export default function DashboardAccordion({
+    machines,
+    onShowMachineDetails,
+    dinnerMenu,
+    showDinnerSection = false,
+    showDinnerAdminButton = false,
+    onDinnerAdminClick,
+}: DashboardAccordionProps) {
     const [showHint, setShowHint] = useState(true);
     const [showActualTime, setShowActualTime] = useState(false);
 
@@ -116,6 +128,74 @@ export default function DashboardAccordion({ machines, onShowMachineDetails }: D
                     </div>
                 </div>
             </PixelCard>
+
+            {showDinnerSection && (
+                <PixelCard title="What's for Dinner?" icon={UtensilsCrossed} defaultOpen={true}>
+                    <div className="flex flex-col gap-3 font-body">
+                        {dinnerMenu ? (
+                            <>
+                                <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                        <h3 className="font-bold text-sm">{dinnerMenu.title}</h3>
+                                        <p className="text-xs text-muted-foreground">{dinnerMenu.dateLabel}</p>
+                                    </div>
+                                    <span className="text-[10px] text-muted-foreground">
+                                        Updated {new Date(dinnerMenu.updatedAt).toLocaleString()}
+                                    </span>
+                                </div>
+
+                                {dinnerMenu.type === "text" && (
+                                    <div className="rounded border border-dashed border-border/60 bg-background/60 p-3 text-sm whitespace-pre-wrap break-words">
+                                        {dinnerMenu.text}
+                                    </div>
+                                )}
+
+                                {dinnerMenu.type === "image" && dinnerMenu.filePath && (
+                                    <div className="rounded border border-dashed border-border/60 bg-background/60 p-2 max-h-[420px] overflow-hidden">
+                                        <img
+                                            src={dinnerMenu.filePath}
+                                            alt="Dinner menu"
+                                            className="w-full max-h-[400px] object-contain mx-auto"
+                                        />
+                                    </div>
+                                )}
+
+                                {dinnerMenu.type === "pdf" && dinnerMenu.filePath && (
+                                    <div className="rounded border border-dashed border-border/60 bg-background/60 p-2">
+                                        <iframe
+                                            src={dinnerMenu.filePath}
+                                            title="Dinner menu PDF"
+                                            className="w-full h-[420px] border-0 rounded"
+                                        />
+                                        <a
+                                            href={dinnerMenu.filePath}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-block mt-2 text-xs underline text-primary"
+                                        >
+                                            Open PDF in new tab
+                                        </a>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-sm text-muted-foreground">No dinner menu available yet.</div>
+                        )}
+
+                        {showDinnerAdminButton && (
+                            <div className="flex justify-end">
+                                <button
+                                    type="button"
+                                    onClick={onDinnerAdminClick}
+                                    className="pixel-btn px-3 py-1.5 text-xs bg-primary/15 hover:bg-primary/25 transition-colors"
+                                >
+                                    Catering Admin
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </PixelCard>
+            )}
 
             {/* 2. Shuttles */}
             <PixelCard title="UOW Shuttles" icon={BusFront} defaultOpen={true}>
