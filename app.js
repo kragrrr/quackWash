@@ -5,7 +5,14 @@ import path from "node:path";
 import url from "node:url";
 import { fileURLToPath } from "node:url";
 
-const _appDir = path.dirname(fileURLToPath(import.meta.url));
+let _appDir;
+if (typeof __dirname !== 'undefined') {
+    _appDir = __dirname;
+} else if (typeof import.meta !== 'undefined' && import.meta.url) {
+    _appDir = path.dirname(fileURLToPath(import.meta.url));
+} else {
+    _appDir = process.cwd();
+}
 const IS_SERVERLESS = !!process.env.NETLIFY || !!process.env.AWS_REGION;
 const DATA_DIR = IS_SERVERLESS ? "/tmp" : _appDir;
 
