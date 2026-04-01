@@ -6,11 +6,14 @@ import url from "node:url";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const IS_SERVERLESS = !!process.env.NETLIFY || !!process.env.AWS_REGION;
+const DATA_DIR = IS_SERVERLESS ? "/tmp" : __dirname;
+
 const DIST_DIR = path.join(__dirname, "dist");
-const VISITORS_FILE = path.join(__dirname, "visitors.json");
-const MACHINE_HISTORY_FILE = path.join(__dirname, "machine-history.json");
-const DINNER_MENU_FILE = path.join(__dirname, "dinner-menu.json");
-const UPLOADS_DIR = path.join(__dirname, "uploads");
+const VISITORS_FILE = path.join(DATA_DIR, "visitors.json");
+const MACHINE_HISTORY_FILE = path.join(DATA_DIR, "machine-history.json");
+const DINNER_MENU_FILE = path.join(DATA_DIR, "dinner-menu.json");
+const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024;
 const TANGERPAY_CACHE_TTL_MS = 30_000;
 const MACHINE_HISTORY_RETENTION_MS = 14 * 24 * 60 * 60 * 1000;
@@ -61,7 +64,7 @@ const DEV_ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || "replacejumpr";
 const PAYPAL_CLIENT_ID = process.env.VITE_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID;
 const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
 const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
-const PAYPAL_TX_FILE = path.join(__dirname, "paypal-transactions.json");
+const PAYPAL_TX_FILE = path.join(DATA_DIR, "paypal-transactions.json");
 
 function todayKey() {
     return new Date().toISOString().slice(0, 10);
@@ -451,8 +454,15 @@ function savePayPalTransaction(transaction) {
     fs.writeFileSync(PAYPAL_TX_FILE, JSON.stringify(txs, null, 2));
 }
 
-const server = http.createServer((req, res) => {
-    const parsedUrl = url.parse(req.url);
+export const appHandler = (req, res) => {
+    let reqUrl = req.url;
+    // Strip Netlify function path prefix so relative routes work seamlessly
+    if (reqUrl.startsWith("/.netlify/functions/server")) {
+        reqUrl = reqUrl.replace("/.netlify/functions/server", "") || "/";
+    }
+    req.url = reqUrl; // Assign back so internal proxies access the stripped path
+
+    const parsedUrl = url.parse(reqUrl);
     const pathname = decodeURIComponent(parsedUrl.pathname);
 
     // Visitor counter
@@ -697,6 +707,12 @@ const server = http.createServer((req, res) => {
             });
         }
     });
-});
+};
 
-server.listen(process.env.PORT || 3000);
+const server = http.createServer(appHandler);
+
+if (!IS_SERVERLESS) {
+    server.listen(process.env.PORT || 3000, () => {
+        console.log(`Server listening on port ${process.env.PORT || 3000}`);
+    });
+}

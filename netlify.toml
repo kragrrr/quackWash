@@ -1,0 +1,38 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/api/tangerpay/*"
+  to = "/.netlify/functions/tangerpay"
+  status = 200
+
+[[redirects]]
+  from = "/api/tfnsw/*"
+  to = "/.netlify/functions/tfnsw"
+  status = 200
+
+[[redirects]]
+  from = "/api/paypal/*"
+  to = "/.netlify/functions/paypal"
+  status = 200
+
+[[redirects]]
+  from = "/api/visitors"
+  to = "/.netlify/functions/visitors"
+  status = 200
+
+[[redirects]]
+  from = "/api/dev/dinner-menu"
+  to = "/.netlify/functions/dinner"
+  status = 200
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "/.netlify/functions/uploads"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
