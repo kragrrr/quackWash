@@ -5,11 +5,11 @@ import path from "node:path";
 import url from "node:url";
 import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _appDir = path.dirname(fileURLToPath(import.meta.url));
 const IS_SERVERLESS = !!process.env.NETLIFY || !!process.env.AWS_REGION;
-const DATA_DIR = IS_SERVERLESS ? "/tmp" : __dirname;
+const DATA_DIR = IS_SERVERLESS ? "/tmp" : _appDir;
 
-const DIST_DIR = path.join(__dirname, "dist");
+const DIST_DIR = path.join(_appDir, "dist");
 const VISITORS_FILE = path.join(DATA_DIR, "visitors.json");
 const MACHINE_HISTORY_FILE = path.join(DATA_DIR, "machine-history.json");
 const DINNER_MENU_FILE = path.join(DATA_DIR, "dinner-menu.json");
@@ -34,7 +34,7 @@ const tangerpayInflight = new Map();
 // --- ENV LOADER ---
 // Manually parse .env.local since Node doesn't automatically do this without dotenv
 try {
-    const envPath = path.join(__dirname, ".env.local");
+    const envPath = path.join(_appDir, ".env.local");
     if (fs.existsSync(envPath)) {
         const envContent = fs.readFileSync(envPath, "utf-8");
         envContent.split("\n").forEach((line) => {
