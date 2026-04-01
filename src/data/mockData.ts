@@ -7,6 +7,9 @@ export interface Machine {
   type: MachineType;
   status: MachineStatus;
   cycleMinutesRemaining?: number;
+  machineGuid?: string;
+  price?: number;
+  currency?: string;
 }
 
 export const MOCK_MACHINES: Machine[] = [

@@ -13,6 +13,9 @@ dist-ssr
 *.local
 visitors.json
 machine-history.json
+dinner-menu.json
+paypal-transactions.json
+uploads/
 
 # Editor directories and files
 .vscode/*

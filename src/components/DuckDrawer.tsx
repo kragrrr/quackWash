@@ -1,8 +1,9 @@
+import { useState, useEffect } from "react";
 import { Machine } from "@/data/mockData";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter, DrawerClose } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import PayPalPayButton from "./PayPalPayButton";
 
 interface DuckDrawerProps {
   machine: Machine | null;
@@ -27,6 +28,16 @@ const DuckDrawer = ({
   onOpenChange,
 }: DuckDrawerProps) => {
   const { toast } = useToast();
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+
+  // Reset payment success when a new machine is selected or drawer opens
+  useEffect(() => {
+    if (open) {
+      setPaymentSuccess(false);
+      setTransactionId(null);
+    }
+  }, [open, machine?.id]);
 
   if (!machine) return null;
 
@@ -92,16 +103,61 @@ const DuckDrawer = ({
         </DrawerHeader>
 
         <div className="px-6 pb-2 text-center">
-          {isIdle && (
-            <p
-              style={{
-                fontFamily: "VT323, monospace",
-                fontSize: "1.3rem",
-                color: "hsl(var(--duck-idle))",
-              }}
-            >
-              ▶ This duck is FREE!
-            </p>
+          {isIdle && !paymentSuccess && (
+            <div className="flex flex-col items-center w-full px-2">
+              <p
+                style={{
+                  fontFamily: "VT323, monospace",
+                  fontSize: "1.3rem",
+                  color: "hsl(var(--duck-idle))",
+                }}
+              >
+                ▶ This duck is FREE!
+              </p>
+              {machine.price !== undefined && (
+                <div className="mt-4 w-full px-2 max-w-[300px]">
+                  <div className="mb-2 text-center" style={{ fontFamily: '"Press Start 2P", monospace', fontSize: "0.5rem", color: "hsl(var(--foreground))", lineHeight: "1.8" }}>
+                    PAY ${machine.price.toFixed(2)} {machine.currency} TO START
+                  </div>
+                  <PayPalPayButton
+                      machine={machine}
+                      onSuccess={(details) => {
+                          setPaymentSuccess(true);
+                          setTransactionId(details.id);
+                          toast({
+                              title: "Payment Successful! 🎉",
+                              description: `Transaction ID: ${details.id}`,
+                              style: { backgroundColor: "hsl(var(--duck-idle))", color: "white" }
+                          });
+                      }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
+          {isIdle && paymentSuccess && (
+            <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
+               <div className="text-5xl mb-3 animate-bounce">🦆🎉</div>
+               <p
+                  style={{
+                    fontFamily: '"Press Start 2P", monospace',
+                    fontSize: "0.75rem",
+                    color: "hsl(var(--duck-idle))",
+                    lineHeight: "1.5",
+                  }}
+               >
+                 PAYMENT COMPLETE!
+               </p>
+               <p style={{ fontFamily: "VT323, monospace", fontSize: "1.3rem", marginTop: "8px" }}>
+                 Machine is starting...
+               </p>
+               {transactionId && (
+                   <p className="text-xs text-muted-foreground mt-2" style={{ fontFamily: "monospace" }}>
+                       TXN: {transactionId}
+                   </p>
+               )}
+            </div>
           )}
           {isRunning && (
             <div

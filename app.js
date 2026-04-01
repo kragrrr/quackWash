@@ -27,8 +27,41 @@ const HOP_BY_HOP_HEADERS = new Set([
 ]);
 const tangerpayCache = new Map();
 const tangerpayInflight = new Map();
+
+// --- ENV LOADER ---
+// Manually parse .env.local since Node doesn't automatically do this without dotenv
+try {
+    const envPath = path.join(__dirname, ".env.local");
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, "utf-8");
+        envContent.split("\n").forEach((line) => {
+            const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+            if (match) {
+                const key = match[1];
+                let value = match[2] || "";
+                // Handle inline comments
+                value = value.split(" #")[0].split(" //")[0].trim();
+                // Strip quotes
+                if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+                if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+                
+                if (process.env[key] === undefined) {
+                    process.env[key] = value;
+                }
+            }
+        });
+    }
+} catch (err) {
+    console.error("Warning: Could not load .env.local manually:", err.message);
+}
+
 const DEV_VIEWER_PASSWORD = process.env.DEV_VIEWER_PASSWORD || "replacejumpr";
 const DEV_ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || "replacejumpr";
+
+const PAYPAL_CLIENT_ID = process.env.VITE_PAYPAL_CLIENT_ID || process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";
+const PAYPAL_TX_FILE = path.join(__dirname, "paypal-transactions.json");
 
 function todayKey() {
     return new Date().toISOString().slice(0, 10);
@@ -386,6 +419,37 @@ function proxyTfnsw(req, res, apiPath) {
     req.pipe(proxyReq);
 }
 
+// --- PAYPAL INTEGRATION ---
+async function getPayPalAccessToken() {
+    const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString("base64");
+    const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Basic ${auth}`,
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "grant_type=client_credentials"
+    });
+    
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Failed to get PayPal token: ${errText}`);
+    }
+    
+    const data = await response.json();
+    return data.access_token;
+}
+
+function savePayPalTransaction(transaction) {
+    let txs = [];
+    try {
+        if (fs.existsSync(PAYPAL_TX_FILE)) {
+            txs = JSON.parse(fs.readFileSync(PAYPAL_TX_FILE, "utf-8"));
+        }
+    } catch (e) {}
+    txs.push({ ...transaction, timestamp: new Date().toISOString() });
+    fs.writeFileSync(PAYPAL_TX_FILE, JSON.stringify(txs, null, 2));
+}
 
 const server = http.createServer((req, res) => {
     const parsedUrl = url.parse(req.url);
@@ -483,6 +547,100 @@ const server = http.createServer((req, res) => {
                 const status = error.message === "Payload too large" ? 413 : 400;
                 res.writeHead(status, { "Content-Type": "application/json" });
                 res.end(JSON.stringify({ error: error.message }));
+            });
+    }
+
+    if (pathname === "/api/paypal/create-order" && req.method === "POST") {
+        return readJsonBody(req)
+            .then(async (body) => {
+                const { machineId, machineName, amount } = body;
+                if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+                    res.writeHead(500, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ error: "PayPal credentials not configured on server." }));
+                }
+                if (!machineId || !amount) {
+                    res.writeHead(400, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ error: "Missing required parameters for order." }));
+                }
+                
+                const accessToken = await getPayPalAccessToken();
+                const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`
+                    },
+                    body: JSON.stringify({
+                        intent: "CAPTURE",
+                        purchase_units: [
+                            {
+                                reference_id: machineId,
+                                description: `Laundry Wash/Dry - ${machineName || machineId}`,
+                                amount: {
+                                    currency_code: "AUD",
+                                    value: amount.toFixed(2)
+                                }
+                            }
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    res.writeHead(response.status, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify(data));
+                }
+
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify(data));
+            })
+            .catch(err => {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: err.message }));
+            });
+    }
+
+    if (pathname === "/api/paypal/capture-order" && req.method === "POST") {
+        return readJsonBody(req)
+            .then(async (body) => {
+                const { orderID } = body;
+                if (!orderID) {
+                    res.writeHead(400, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ error: "Missing orderID" }));
+                }
+
+                const accessToken = await getPayPalAccessToken();
+                const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderID}/capture`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    res.writeHead(response.status, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify(data));
+                }
+
+                // Log the transaction
+                if (data.status === "COMPLETED") {
+                    savePayPalTransaction({
+                        orderID,
+                        machineId: data.purchase_units?.[0]?.reference_id,
+                        machineName: data.purchase_units?.[0]?.description,
+                        amount: data.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value,
+                        payer: data.payer?.email_address
+                    });
+                }
+
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify(data));
+            })
+            .catch(err => {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                res.end(JSON.stringify({ error: err.message }));
             });
     }
 

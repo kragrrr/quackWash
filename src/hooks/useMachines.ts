@@ -13,6 +13,11 @@ interface TangerpayMachine {
         cycleStatus: "Idle" | "Running";
         cycleMinutesRemaining: number;
     };
+    vendToCycleMaps?: Array<{
+        prices: Array<{
+            paymentAmount: number;
+        }>;
+    }>;
 }
 
 interface TangerpayResponse {
@@ -28,12 +33,22 @@ interface TangerpayResponse {
  * - API cycleStatus "Idle"          → Machine.status "Idle"
  */
 function transformMachine(raw: TangerpayMachine): Machine {
+    let price: number | undefined;
+    let currency: string | undefined = "AUD";
+
+    if (raw.vendToCycleMaps?.[0]?.prices?.[0]?.paymentAmount !== undefined) {
+        price = raw.vendToCycleMaps[0].prices[0].paymentAmount;
+    }
+
     if (raw.status === "Maintenance") {
         return {
             id: raw.id,
             name: raw.name,
             type: raw.type as MachineType,
             status: "Maintenance",
+            machineGuid: raw.id,
+            price,
+            currency,
         };
     }
 
@@ -44,6 +59,9 @@ function transformMachine(raw: TangerpayMachine): Machine {
             type: raw.type as MachineType,
             status: "Running",
             cycleMinutesRemaining: raw.cycleInfo.cycleMinutesRemaining,
+            machineGuid: raw.id,
+            price,
+            currency,
         };
     }
 
@@ -52,6 +70,9 @@ function transformMachine(raw: TangerpayMachine): Machine {
         name: raw.name,
         type: raw.type as MachineType,
         status: "Idle",
+        machineGuid: raw.id,
+        price,
+        currency,
     };
 }
 

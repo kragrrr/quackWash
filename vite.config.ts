@@ -29,6 +29,10 @@ export default defineConfig(({ mode }) => ({
         target: "http://localhost:3000",
         changeOrigin: true,
       },
+      "/api/paypal": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+      },
     },
   },
   plugins: [react()].filter(Boolean),
